@@ -124,10 +124,4 @@ DROP WAREHOUSE IF EXISTS snow_bear_wh;
 
 -- Drop the role created during setup
 DROP ROLE IF EXISTS snow_bear_data_scientist;
-
--- Note: Dropping the SNOW_BEAR_DB database automatically removes:
--- - All notebooks (including "Snow Bear Complete Setup")
--- - All Streamlit apps (including "Snow Bear Fan Analytics") 
--- - All stages and file formats
--- No manual cleanup of individual apps/notebooks needed
 */
