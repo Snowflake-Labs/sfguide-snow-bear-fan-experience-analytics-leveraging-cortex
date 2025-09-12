@@ -88,3 +88,50 @@ SELECT 'Snow Bear setup complete! Now upload basketball_fan_survey_data.csv.gz t
 -- Instructions for next steps:
 -- 1. Upload basketball_fan_survey_data.csv.gz to the snow_bear_data_stage
 -- 2. Run the Snow Bear notebook (snow_bear_complete_setup.ipynb)
+
+-- ============================================================================
+-- TEARDOWN SCRIPT (Uncomment lines below to clean up all resources)
+-- ============================================================================
+
+/*
+-- Snow Bear Analytics Teardown Script
+-- Uncomment and run these lines to remove all objects created during the quickstart
+
+-- Switch to appropriate role for cleanup
+USE ROLE snow_bear_data_scientist;
+USE WAREHOUSE snow_bear_analytics_wh;
+USE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
+USE SCHEMA GOLD_LAYER;
+
+-- Drop Cortex Search Service (if created)
+DROP CORTEX SEARCH SERVICE IF EXISTS SNOWBEAR_SEARCH_ANALYSIS;
+
+-- Drop all tables and views
+DROP TABLE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER.QUALTRICS_SCORECARD;
+DROP TABLE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER.EXTRACTED_THEMES_STRUCTURED;
+DROP TABLE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER.SCORECARD_THEME_INFO_SNOWBEAR;
+DROP TABLE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER.GENERATED_DATA_MAJOR_LEAGUE_BASKETBALL_STRUCTURED;
+
+-- Drop file format
+DROP FILE FORMAT IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER.csv_format;
+
+-- Drop stage
+DROP STAGE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER.snow_bear_data_stage;
+
+-- Drop schemas
+DROP SCHEMA IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER;
+DROP SCHEMA IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER;
+
+-- Drop database
+DROP DATABASE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
+
+-- Drop warehouse
+DROP WAREHOUSE IF EXISTS snow_bear_analytics_wh;
+
+-- Drop role (switch to ACCOUNTADMIN first)
+USE ROLE ACCOUNTADMIN;
+DROP ROLE IF EXISTS snow_bear_data_scientist;
+
+-- Note: Streamlit apps must be deleted manually from the Snowsight UI
+-- Go to Projects → Streamlit → Find "Snow Bear Fan Analytics" → Delete
+*/
