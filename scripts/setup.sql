@@ -39,8 +39,14 @@ COMMENT = 'Analytics warehouse for Snow Bear fan experience analytics';
 -- Step 4: Grant object-level privileges to the role
 GRANT USAGE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
 GRANT OPERATE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+
+-- Grant comprehensive database privileges
 GRANT ALL ON DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB TO ROLE snow_bear_data_scientist;
 GRANT ALL ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
+GRANT USAGE ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
+GRANT MONITOR ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
+
+-- Grant schema privileges
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear_data_scientist;
