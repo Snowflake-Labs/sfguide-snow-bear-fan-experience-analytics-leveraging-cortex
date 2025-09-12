@@ -2,7 +2,7 @@
 # Run this Python worksheet in Snowflake to automatically set up everything
 # This script does everything setup.sql does PLUS creates the notebook from GitHub
 
-import requests
+import urllib.request
 import io
 from snowflake.snowpark.context import get_active_session
 
@@ -186,11 +186,16 @@ session.sql("USE SCHEMA ANALYTICS").collect()
 for filename, url in files_to_download.items():
     try:
         print(f"  📥 Downloading {filename}...")
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        # Use urllib instead of requests
+        with urllib.request.urlopen(url) as response:
+            if response.status != 200:
+                raise Exception(f"HTTP {response.status}: {response.reason}")
+            
+            file_content = response.read()
         
         # Upload file to stage using put_stream
-        file_stream = io.BytesIO(response.content)
+        file_stream = io.BytesIO(file_content)
         session.file.put_stream(
             input_stream=file_stream,
             stage_location=f"@snow_bear_data_stage/{filename}",
