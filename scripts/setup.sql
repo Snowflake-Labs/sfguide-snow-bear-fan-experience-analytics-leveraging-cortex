@@ -103,6 +103,29 @@ SELECT 'Snow Bear setup complete! Now upload basketball_fan_survey_data.csv.gz t
 -- 2. Run the Snow Bear notebook (snow_bear_complete_setup.ipynb)
 
 -- ============================================================================
+-- OPTIONAL: CREATE NOTEBOOK FROM STAGE (Uncomment to auto-create notebook)
+-- ============================================================================
+
+/*
+-- Alternative: Create the notebook directly from the uploaded file
+-- Uncomment these lines if you want to auto-create the notebook instead of manually importing
+
+USE DATABASE SNOW_BEAR_DB;
+USE SCHEMA ANALYTICS;
+
+CREATE OR REPLACE NOTEBOOK "Snow Bear Complete Setup"
+    FROM '@SNOW_BEAR_DB.ANALYTICS.SNOW_BEAR_DATA_STAGE'
+    MAIN_FILE = 'snow_bear_complete_setup.ipynb'
+    QUERY_WAREHOUSE = 'SNOW_BEAR_ANALYTICS_WH'
+    COMMENT = 'Snow Bear Fan Experience Analytics - Complete Setup and Processing Notebook';
+
+-- Grant usage to the Snow Bear role
+GRANT USAGE ON NOTEBOOK "Snow Bear Complete Setup" TO ROLE SNOW_BEAR_DATA_SCIENTIST;
+
+SELECT 'Snow Bear notebook created successfully! Navigate to Projects → Notebooks → Snow Bear Complete Setup to run the analytics workflow.' AS status;
+*/
+
+-- ============================================================================
 -- TEARDOWN SCRIPT (Uncomment lines below to clean up all resources)
 -- ============================================================================
 
@@ -113,7 +136,8 @@ SELECT 'Snow Bear setup complete! Now upload basketball_fan_survey_data.csv.gz t
 -- Switch to ACCOUNTADMIN role for cleanup
 USE ROLE ACCOUNTADMIN;
 
--- Drop the databases created during setup
+-- Drop the databases created during setup (this will cascade to remove all contained objects)
+-- Note: This automatically removes all schemas, tables, stages, notebooks, and Streamlit apps
 DROP DATABASE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
 DROP DATABASE IF EXISTS SNOW_BEAR_DB;
 
@@ -122,4 +146,10 @@ DROP WAREHOUSE IF EXISTS snow_bear_analytics_wh;
 
 -- Drop the role created during setup
 DROP ROLE IF EXISTS snow_bear_data_scientist;
+
+-- Note: Dropping the SNOW_BEAR_DB database automatically removes:
+-- - All notebooks (including "Snow Bear Complete Setup")
+-- - All Streamlit apps (including "Snow Bear Fan Analytics") 
+-- - All stages and file formats
+-- No manual cleanup of individual apps/notebooks needed
 */
