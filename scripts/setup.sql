@@ -99,31 +99,9 @@ CREATE OR REPLACE FILE FORMAT csv_format
 SELECT 'Snow Bear setup complete! Now upload basketball_fan_survey_data.csv.gz to the snow_bear_data_stage and run the notebook.' AS status;
 
 -- Instructions for next steps:
--- 1. Upload basketball_fan_survey_data.csv.gz to the snow_bear_data_stage
--- 2. Run the Snow Bear notebook (snow_bear_complete_setup.ipynb)
-
--- ============================================================================
--- OPTIONAL: CREATE NOTEBOOK FROM STAGE (Uncomment to auto-create notebook)
--- ============================================================================
-
-/*
--- Alternative: Create the notebook directly from the uploaded file
--- Uncomment these lines if you want to auto-create the notebook instead of manually importing
-
-USE DATABASE SNOW_BEAR_DB;
-USE SCHEMA ANALYTICS;
-
-CREATE OR REPLACE NOTEBOOK "Snow Bear Complete Setup"
-    FROM '@SNOW_BEAR_DB.ANALYTICS.SNOW_BEAR_DATA_STAGE'
-    MAIN_FILE = 'snow_bear_complete_setup.ipynb'
-    QUERY_WAREHOUSE = 'SNOW_BEAR_ANALYTICS_WH'
-    COMMENT = 'Snow Bear Fan Experience Analytics - Complete Setup and Processing Notebook';
-
--- Grant usage to the Snow Bear role
-GRANT USAGE ON NOTEBOOK "Snow Bear Complete Setup" TO ROLE SNOW_BEAR_DATA_SCIENTIST;
-
-SELECT 'Snow Bear notebook created successfully! Navigate to Projects → Notebooks → Snow Bear Complete Setup to run the analytics workflow.' AS status;
-*/
+-- 1. Upload basketball_fan_survey_data.csv.gz and snow_bear.py to the snow_bear_data_stage
+-- 2. Download and import snow_bear_complete_setup.ipynb using Snowsight's Import .ipynb file feature
+-- 3. Run the imported Snow Bear notebook to process analytics and create Streamlit app
 
 -- ============================================================================
 -- TEARDOWN SCRIPT (Uncomment lines below to clean up all resources)
