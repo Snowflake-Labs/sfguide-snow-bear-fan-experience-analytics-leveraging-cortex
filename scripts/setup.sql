@@ -1,9 +1,21 @@
 -- Snow Bear Fan Experience Analytics - Initial Setup Script
 -- Run this script BEFORE using the notebook
--- This creates the database, schemas, role, warehouse, stage, and grants permissions
+-- This creates the role, grants privileges, then creates databases, schemas, warehouse, and stage
 
 USE ROLE accountadmin;
 
+-- Step 1: Create role for Snow Bear data scientists
+CREATE OR REPLACE ROLE snow_bear_data_scientist;
+
+-- Step 2: Grant system-level privileges to the role
+-- Grant Cortex AI privileges (required for AI functions)
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE snow_bear_data_scientist;
+
+-- Grant role to current user
+SET my_user_var = (SELECT '"' || CURRENT_USER() || '"');
+GRANT ROLE snow_bear_data_scientist TO USER identifier($my_user_var);
+
+-- Step 3: Create Snowflake objects (databases, schemas, warehouse)
 -- Create Snow Bear databases and schemas
 CREATE OR REPLACE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
 CREATE OR REPLACE DATABASE SNOW_BEAR_DB;
@@ -12,8 +24,8 @@ USE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
 CREATE OR REPLACE SCHEMA BRONZE_LAYER;
 CREATE OR REPLACE SCHEMA GOLD_LAYER;
 
--- Create role for Snow Bear data scientists
-CREATE OR REPLACE ROLE snow_bear_data_scientist;
+USE DATABASE SNOW_BEAR_DB;
+CREATE OR REPLACE SCHEMA ANALYTICS;
 
 -- Create warehouse for analytics
 CREATE OR REPLACE WAREHOUSE snow_bear_analytics_wh
@@ -24,29 +36,27 @@ CREATE OR REPLACE WAREHOUSE snow_bear_analytics_wh
     INITIALLY_SUSPENDED = TRUE
 COMMENT = 'Analytics warehouse for Snow Bear fan experience analytics';
 
--- Grant privileges
+-- Step 4: Grant object-level privileges to the role
 GRANT USAGE ON WAREHOUSE snow_bear_analytics_wh TO ROLE snow_bear_data_scientist;
 GRANT OPERATE ON WAREHOUSE snow_bear_analytics_wh TO ROLE snow_bear_data_scientist;
 GRANT ALL ON DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB TO ROLE snow_bear_data_scientist;
 GRANT ALL ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER TO ROLE snow_bear_data_scientist;
+GRANT ALL ON SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear_data_scientist;
 
--- Grant Cortex AI privileges (required for AI functions)
-GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE snow_bear_data_scientist;
-
--- Grant role to current user
-SET my_user_var = (SELECT '"' || CURRENT_USER() || '"');
-GRANT ROLE snow_bear_data_scientist TO USER identifier($my_user_var);
-
--- Switch to Snow Bear role and schema
+-- Switch to Snow Bear role and create stage in SNOW_BEAR_DB
 USE ROLE snow_bear_data_scientist;
 USE WAREHOUSE snow_bear_analytics_wh;
-USE SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER;
+USE DATABASE SNOW_BEAR_DB;
+USE SCHEMA ANALYTICS;
 
--- Create stage for CSV file upload
+-- Create stage for CSV file upload in SNOW_BEAR_DB.ANALYTICS
 CREATE OR REPLACE STAGE snow_bear_data_stage
     COMMENT = 'Stage for Snow Bear fan survey data files';
+
+-- Switch back to data schema for table creation
+USE SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER;
 
 -- Create the raw data table for basketball fan survey responses
 CREATE OR REPLACE TABLE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER.GENERATED_DATA_MAJOR_LEAGUE_BASKETBALL_STRUCTURED (
