@@ -11,21 +11,20 @@ CREATE OR REPLACE ROLE snow_bear_data_scientist;
 -- Grant Cortex AI privileges (required for AI functions)
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE snow_bear_data_scientist;
 
+-- Grant database creation privilege to the role
+GRANT CREATE DATABASE ON ACCOUNT TO ROLE snow_bear_data_scientist;
+
 -- Grant role to current user
 SET my_user_var = (SELECT '"' || CURRENT_USER() || '"');
 GRANT ROLE snow_bear_data_scientist TO USER identifier($my_user_var);
 
 -- Step 3: Create Snowflake objects (databases, schemas, warehouse)
--- Create Snow Bear databases and schemas
+-- Create basketball data database (as ACCOUNTADMIN)
 CREATE OR REPLACE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
-CREATE OR REPLACE DATABASE SNOW_BEAR_DB;
 
 USE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
 CREATE OR REPLACE SCHEMA BRONZE_LAYER;
 CREATE OR REPLACE SCHEMA GOLD_LAYER;
-
-USE DATABASE SNOW_BEAR_DB;
-CREATE OR REPLACE SCHEMA ANALYTICS;
 
 -- Create warehouse for analytics
 CREATE OR REPLACE WAREHOUSE snow_bear_wh
@@ -42,14 +41,10 @@ GRANT OPERATE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
 
 -- Grant comprehensive database privileges
 GRANT ALL ON DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB TO ROLE snow_bear_data_scientist;
-GRANT ALL ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
-GRANT USAGE ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
-GRANT MONITOR ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
 
 -- Grant schema privileges
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER TO ROLE snow_bear_data_scientist;
-GRANT ALL ON SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear_data_scientist;
 
 -- Grant privileges on future objects (critical for notebook-created objects)
 GRANT ALL ON FUTURE TABLES IN SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
@@ -57,13 +52,15 @@ GRANT ALL ON FUTURE TABLES IN SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LA
 GRANT ALL ON FUTURE VIEWS IN SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
 GRANT ALL ON FUTURE VIEWS IN SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER TO ROLE snow_bear_data_scientist;
 GRANT ALL ON FUTURE FILE FORMATS IN SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
-GRANT ALL ON FUTURE STAGES IN SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear_data_scientist;
 
--- Switch to Snow Bear role and create stage in SNOW_BEAR_DB
+-- Switch to Snow Bear role and create SNOW_BEAR_DB (now owned by snow_bear_data_scientist)
 USE ROLE snow_bear_data_scientist;
 USE WAREHOUSE snow_bear_wh;
+
+-- Create SNOW_BEAR_DB and schema (now owned by snow_bear_data_scientist)
+CREATE OR REPLACE DATABASE SNOW_BEAR_DB;
 USE DATABASE SNOW_BEAR_DB;
-USE SCHEMA ANALYTICS;
+CREATE OR REPLACE SCHEMA ANALYTICS;
 
 -- Create stage for CSV file upload in SNOW_BEAR_DB.ANALYTICS
 CREATE OR REPLACE STAGE snow_bear_data_stage
