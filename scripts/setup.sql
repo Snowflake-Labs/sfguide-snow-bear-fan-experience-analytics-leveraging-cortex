@@ -28,7 +28,7 @@ USE DATABASE SNOW_BEAR_DB;
 CREATE OR REPLACE SCHEMA ANALYTICS;
 
 -- Create warehouse for analytics
-CREATE OR REPLACE WAREHOUSE snow_bear_analytics_wh
+CREATE OR REPLACE WAREHOUSE snow_bear_wh
     WAREHOUSE_SIZE = 'small'
     WAREHOUSE_TYPE = 'standard'
     AUTO_SUSPEND = 60
@@ -37,8 +37,8 @@ CREATE OR REPLACE WAREHOUSE snow_bear_analytics_wh
 COMMENT = 'Analytics warehouse for Snow Bear fan experience analytics';
 
 -- Step 4: Grant object-level privileges to the role
-GRANT USAGE ON WAREHOUSE snow_bear_analytics_wh TO ROLE snow_bear_data_scientist;
-GRANT OPERATE ON WAREHOUSE snow_bear_analytics_wh TO ROLE snow_bear_data_scientist;
+GRANT USAGE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+GRANT OPERATE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
 GRANT ALL ON DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB TO ROLE snow_bear_data_scientist;
 GRANT ALL ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
@@ -47,7 +47,7 @@ GRANT ALL ON SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear_data_scientist;
 
 -- Switch to Snow Bear role and create stage in SNOW_BEAR_DB
 USE ROLE snow_bear_data_scientist;
-USE WAREHOUSE snow_bear_analytics_wh;
+USE WAREHOUSE snow_bear_wh;
 USE DATABASE SNOW_BEAR_DB;
 USE SCHEMA ANALYTICS;
 
@@ -120,7 +120,7 @@ DROP DATABASE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
 DROP DATABASE IF EXISTS SNOW_BEAR_DB;
 
 -- Drop the warehouse created during setup
-DROP WAREHOUSE IF EXISTS snow_bear_analytics_wh;
+DROP WAREHOUSE IF EXISTS snow_bear_wh;
 
 -- Drop the role created during setup
 DROP ROLE IF EXISTS snow_bear_data_scientist;
