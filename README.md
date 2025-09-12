@@ -6,4 +6,4 @@ Build a basketball fan experience analytics platform using Snowflake Cortex AI t
 
 ## Step-By-Step Guide
 
-For prerequisites, environment setup, step-by-step guide and instructions, please refer to the [QuickStart Guide](PLACEHOLDER_FOR_QUICKSTART_LINK).
+For prerequisites, environment setup, step-by-step guide and instructions, please refer to the [QuickStart Guide](https://quickstarts.snowflake.com/guide/snow_bear_leveraging_cortex_for_advanced_analytics/index.html?index=..%2F..index#0).
