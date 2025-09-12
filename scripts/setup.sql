@@ -4,11 +4,13 @@
 
 USE ROLE accountadmin;
 
--- Create Snow Bear database and schemas
-CREATE DATABASE IF NOT EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
+-- Create Snow Bear databases and schemas
+CREATE OR REPLACE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
+CREATE OR REPLACE DATABASE SNOW_BEAR_DB;
+
 USE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
-CREATE SCHEMA IF NOT EXISTS BRONZE_LAYER;
-CREATE SCHEMA IF NOT EXISTS GOLD_LAYER;
+CREATE OR REPLACE SCHEMA BRONZE_LAYER;
+CREATE OR REPLACE SCHEMA GOLD_LAYER;
 
 -- Create role for Snow Bear data scientists
 CREATE OR REPLACE ROLE snow_bear_data_scientist;
@@ -26,6 +28,7 @@ COMMENT = 'Analytics warehouse for Snow Bear fan experience analytics';
 GRANT USAGE ON WAREHOUSE snow_bear_analytics_wh TO ROLE snow_bear_data_scientist;
 GRANT OPERATE ON WAREHOUSE snow_bear_analytics_wh TO ROLE snow_bear_data_scientist;
 GRANT ALL ON DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB TO ROLE snow_bear_data_scientist;
+GRANT ALL ON DATABASE SNOW_BEAR_DB TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER TO ROLE snow_bear_data_scientist;
 GRANT ALL ON SCHEMA CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER TO ROLE snow_bear_data_scientist;
 
@@ -100,8 +103,9 @@ SELECT 'Snow Bear setup complete! Now upload basketball_fan_survey_data.csv.gz t
 -- Switch to ACCOUNTADMIN role for cleanup
 USE ROLE ACCOUNTADMIN;
 
--- Drop the database created during setup
+-- Drop the databases created during setup
 DROP DATABASE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
+DROP DATABASE IF EXISTS SNOW_BEAR_DB;
 
 -- Drop the warehouse created during setup
 DROP WAREHOUSE IF EXISTS snow_bear_analytics_wh;
