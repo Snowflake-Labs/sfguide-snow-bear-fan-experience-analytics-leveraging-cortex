@@ -185,10 +185,8 @@ SCHEMA = "ANALYTICS"
 CUSTOMER_SCHEMA = f"{DATABASE}.{SCHEMA}"
 STAGE = "semantic_models"
 
-# Data is stored in CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER (from quickstart setup)
-DATA_DATABASE = "CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB"
-DATA_SCHEMA = "GOLD_LAYER"
-DATA_CUSTOMER_SCHEMA = f"{DATA_DATABASE}.{DATA_SCHEMA}"
+# Note: Data now stored in SNOW_BEAR_DB schemas to match DataOps structure
+# This allows the app to use dynamic database referencing like DataOps
 
 # Note: Query tags removed due to Snowflake native Streamlit restrictions
 # Native Streamlit apps cannot modify session settings like query_tag
@@ -248,8 +246,7 @@ def load_themes_data():
 # Load data
 try:
     df = load_main_data()
-    # Note: themes_df not used in quickstart version
-    themes_df = pd.DataFrame()  # Empty dataframe for compatibility
+    themes_df = load_themes_data()
     
     if df.empty:
         st.error("❌ No data available. Please ensure the basketball survey data has been loaded and processed.")
@@ -761,7 +758,7 @@ with tab6:
                     search_query = f"""
                     WITH search_results AS (
                         SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-                            '{DATA_DATABASE}.{DATA_SCHEMA}.SNOWBEAR_SEARCH_ANALYSIS',
+                            '{DATABASE}.GOLD_LAYER.SNOWBEAR_SEARCH_ANALYSIS',
                             '{{
                                 "query": "{search_term}",
                                 "columns":[

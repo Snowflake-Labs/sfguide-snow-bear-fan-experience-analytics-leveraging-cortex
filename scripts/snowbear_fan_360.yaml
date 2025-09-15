@@ -8,7 +8,7 @@ tables:
       that emerge from feedback, helping management understand key areas of focus
       and trends in customer satisfaction.
     base_table:
-      database: CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB
+      database: SNOW_BEAR_DB
       schema: GOLD_LAYER
       table: EXTRACTED_THEMES_STRUCTURED
     dimensions:
@@ -77,7 +77,7 @@ tables:
       improvement, and make data-driven decisions to enhance the fan experience at
       their events.
     base_table:
-      database: CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB
+      database: SNOW_BEAR_DB
       schema: GOLD_LAYER
       table: QUALTRICS_SCORECARD
     dimensions:

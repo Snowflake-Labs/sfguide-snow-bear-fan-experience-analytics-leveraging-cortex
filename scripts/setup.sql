@@ -44,17 +44,13 @@ USE WAREHOUSE snow_bear_wh;
 -- Verify role switch was successful
 SELECT CURRENT_ROLE() AS active_role, CURRENT_USER() AS current_user;
 
--- Create databases (now owned by snow_bear_data_scientist)
-CREATE OR REPLACE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
+-- Create database (now owned by snow_bear_data_scientist)
 CREATE OR REPLACE DATABASE SNOW_BEAR_DB;
 
--- Create schemas in CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB
-USE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
+-- Create all schemas in SNOW_BEAR_DB
+USE DATABASE SNOW_BEAR_DB;
 CREATE OR REPLACE SCHEMA BRONZE_LAYER;
 CREATE OR REPLACE SCHEMA GOLD_LAYER;
-
--- Create schemas in SNOW_BEAR_DB
-USE DATABASE SNOW_BEAR_DB;
 CREATE OR REPLACE SCHEMA ANALYTICS;
 
 -- Create stages in SNOW_BEAR_DB.ANALYTICS
@@ -65,11 +61,10 @@ CREATE OR REPLACE STAGE semantic_models
     COMMENT = 'Stage for Cortex Analyst semantic model files';
 
 -- Switch to data context for table creation
-USE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
 USE SCHEMA BRONZE_LAYER;
 
 -- Create the raw data table for basketball fan survey responses
-CREATE OR REPLACE TABLE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.BRONZE_LAYER.GENERATED_DATA_MAJOR_LEAGUE_BASKETBALL_STRUCTURED (
+CREATE OR REPLACE TABLE SNOW_BEAR_DB.BRONZE_LAYER.GENERATED_DATA_MAJOR_LEAGUE_BASKETBALL_STRUCTURED (
 	ID VARCHAR(16777216),
 	FOOD_OFFERING_COMMENT VARCHAR(16777216),
 	FOOD_OFFERING_SCORE VARCHAR(16777216),
@@ -130,9 +125,8 @@ SHOW DATABASES LIKE 'SNOW_BEAR_DB';
 -- Switch to ACCOUNTADMIN role for cleanup
 USE ROLE ACCOUNTADMIN;
 
--- Drop the databases created during setup (this will cascade to remove all contained objects)
+-- Drop the database created during setup (this will cascade to remove all contained objects)
 -- Note: This automatically removes all schemas, tables, stages, notebooks, and Streamlit apps
-DROP DATABASE IF EXISTS CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
 DROP DATABASE IF EXISTS SNOW_BEAR_DB;
 
 -- Drop the warehouse created during setup
