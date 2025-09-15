@@ -14,11 +14,16 @@ GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE snow_bear_data_scientist;
 -- Grant database creation privilege to the role
 GRANT CREATE DATABASE ON ACCOUNT TO ROLE snow_bear_data_scientist;
 
+-- Grant additional necessary privileges
+GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE snow_bear_data_scientist;
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE snow_bear_data_scientist;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE snow_bear_data_scientist;
+
 -- Grant role to current user
 SET my_user_var = (SELECT '"' || CURRENT_USER() || '"');
 GRANT ROLE snow_bear_data_scientist TO USER identifier($my_user_var);
 
--- Step 3: Create warehouse (as ACCOUNTADMIN) and grant ownership
+-- Step 3: Create warehouse and grant privileges (keep as ACCOUNTADMIN for stability)
 CREATE OR REPLACE WAREHOUSE snow_bear_wh
     WAREHOUSE_SIZE = 'small'
     WAREHOUSE_TYPE = 'standard'
@@ -27,12 +32,17 @@ CREATE OR REPLACE WAREHOUSE snow_bear_wh
     INITIALLY_SUSPENDED = TRUE
 COMMENT = 'Analytics warehouse for Snow Bear fan experience analytics';
 
--- Grant warehouse ownership to snow_bear_data_scientist
-GRANT OWNERSHIP ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+-- Grant warehouse privileges to snow_bear_data_scientist
+GRANT USAGE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+GRANT OPERATE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+GRANT MONITOR ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
 
 -- Step 4: Switch to snow_bear_data_scientist role to create databases as owner
 USE ROLE snow_bear_data_scientist;
 USE WAREHOUSE snow_bear_wh;
+
+-- Verify role switch was successful
+SELECT CURRENT_ROLE() AS active_role, CURRENT_USER() AS current_user;
 
 -- Create databases (now owned by snow_bear_data_scientist)
 CREATE OR REPLACE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;
@@ -93,7 +103,13 @@ CREATE OR REPLACE FILE FORMAT csv_format
     ESCAPE_UNENCLOSED_FIELD = '\134'
     COMMENT = 'File format for Snow Bear fan survey CSV data';
 
+-- Final verification and status
+SELECT CURRENT_ROLE() AS current_role, CURRENT_DATABASE() AS current_database;
 SELECT 'Snow Bear setup complete! Now upload basketball_fan_survey_data.csv.gz to the snow_bear_data_stage and run the notebook.' AS status;
+
+-- Verify databases are owned by snow_bear_data_scientist
+SHOW DATABASES LIKE 'CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB';
+SHOW DATABASES LIKE 'SNOW_BEAR_DB';
 
 -- Instructions for next steps:
 -- 1. Upload basketball_fan_survey_data.csv.gz and snow_bear.py to the snow_bear_data_stage
