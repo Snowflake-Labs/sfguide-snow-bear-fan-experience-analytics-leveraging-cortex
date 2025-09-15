@@ -57,9 +57,12 @@ CREATE OR REPLACE SCHEMA GOLD_LAYER;
 USE DATABASE SNOW_BEAR_DB;
 CREATE OR REPLACE SCHEMA ANALYTICS;
 
--- Create stage for CSV file upload in SNOW_BEAR_DB.ANALYTICS
+-- Create stages in SNOW_BEAR_DB.ANALYTICS
 CREATE OR REPLACE STAGE snow_bear_data_stage
     COMMENT = 'Stage for Snow Bear fan survey data files';
+
+CREATE OR REPLACE STAGE semantic_models
+    COMMENT = 'Stage for Cortex Analyst semantic model files';
 
 -- Switch to data context for table creation
 USE DATABASE CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB;

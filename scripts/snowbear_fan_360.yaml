@@ -1,0 +1,827 @@
+name: snowbear_fan_360
+description: This is the Snowbear fan 360
+tables:
+  - name: EXTRACTED_THEMES_STRUCTURED
+    description: This table stores categorized themes that have been identified from
+      fan survey responses about their Snow Bears game experiences. It serves as a
+      reference table to organize and track different aspects of the fan experience
+      that emerge from feedback, helping management understand key areas of focus
+      and trends in customer satisfaction.
+    base_table:
+      database: CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB
+      schema: GOLD_LAYER
+      table: EXTRACTED_THEMES_STRUCTURED
+    dimensions:
+      - name: THEME_NAME
+        expr: MAIN_THEME
+        description: Short title or label given to a specific theme or category of
+          fan feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - category name
+          - topic name
+          - feedback category
+        sample_values:
+          - Parking
+          - Food & Concessions
+          - Game Experience
+      - name: THEME_DESCRIPTION
+        expr: THEME_DESCRIPTION
+        description: Detailed explanation of what the theme represents and what types
+          of fan feedback it encompasses
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - theme details
+          - category description
+          - topic details
+        sample_values:
+          - Parking fees are excessive, parking lots are poorly managed, and parking
+            is a nightmare
+          - Food quality is inconsistent, prices are high, and options are limited
+          - Game experience feedback including atmosphere and entertainment
+    time_dimensions:
+      - name: CREATED_DATE
+        expr: CREATED_DATE
+        description: Timestamp indicating when the theme was first created or identified
+          in the system
+        data_type: TIMESTAMP_LTZ(9)
+        unique: false
+        synonyms:
+          - date added
+          - timestamp
+          - entry date
+        sample_values:
+          - '2025-07-16 17:55:25.547000-07:00'
+    facts:
+      - name: THEME_NUMBER
+        expr: THEME_NUMBER
+        description: Unique numerical identifier assigned to each theme identified
+          from fan survey responses
+        data_type: NUMBER(38,0)
+        synonyms:
+          - theme id
+          - theme code
+          - category number
+        sample_values:
+          - '1'
+          - '2'
+          - '3'
+  - name: QUALTRICS_SCORECARD
+    description: The QUALTRICS_SCORECARD table serves as a comprehensive customer
+      feedback repository for the Snow Bears basketball team, capturing detailed fan
+      survey responses about various aspects of their game-day experience, including
+      food, parking, merchandise, seating, and overall satisfaction. This data helps
+      team management understand customer satisfaction levels, identify areas for
+      improvement, and make data-driven decisions to enhance the fan experience at
+      their events.
+    base_table:
+      database: CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB
+      schema: GOLD_LAYER
+      table: QUALTRICS_SCORECARD
+    dimensions:
+      - name: ID
+        expr: ID
+        description: Unique identifier for each survey response
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - identifier
+          - survey id
+          - response id
+        sample_values:
+          - a412388f-d870-40e8-a5c6-ac32ddf14208
+          - 9953ddac-0c93-4d14-8a13-d1528756a162
+          - 26db4a53-b980-4ac4-ac9f-f9ac06bc8680
+      - name: FOOD_OFFERING_COMMENT
+        expr: FOOD_OFFERING_COMMENT
+        description: Fan's written feedback about stadium food and beverage options
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - concession feedback
+          - food remarks
+          - dining comments
+        sample_values:
+          - Standard arena food, nothing special but decent quality.
+          - Great variety, loved the local food vendors.
+          - Limited options for vegetarians, everything overpriced.
+      - name: FOOD_OFFERING_SCORE
+        expr: CASE WHEN FOOD_OFFERING_SCORE = 'N/A' THEN NULL ELSE TRY_CAST(FOOD_OFFERING_SCORE AS INTEGER) END
+        description: Numerical rating given by fans for food and beverage offerings (1-5 scale, NULL when N/A)
+        data_type: NUMBER(38,0)
+        unique: false
+        synonyms:
+          - concession rating
+          - food rating
+          - dining score
+        sample_values:
+          - '3'
+          - '4'
+          - '2'
+      - name: GAME_EXPERIENCE_COMMENT
+        expr: GAME_EXPERIENCE_COMMENT
+        description: Fan's written feedback about their overall game experience
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - match feedback
+          - game feedback
+          - event remarks
+        sample_values:
+          - Great game, SnowBear was entertaining with the crowd.
+          - Amazing atmosphere, close game, and SnowBear was hilarious!
+          - Team lost, but SnowBear made kids happy.
+      - name: GAME_EXPERIENCE_SCORE
+        expr: GAME_EXPERIENCE_SCORE
+        description: Numerical rating given by fans for their game experience
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - match rating
+          - game rating
+          - event score
+        sample_values:
+          - '4'
+          - '5'
+          - '3'
+      - name: MERCHANDISE_OFFERING_COMMENT
+        expr: MERCHANDISE_OFFERING_COMMENT
+        description: Fan's written feedback about available team merchandise
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - merch feedback
+          - souvenir comments
+          - shop remarks
+        sample_values:
+          - Good variety of team gear, liked the retro collection.
+          - Loved the exclusive game day merchandise.
+          - Basic selection, nothing unique.
+      - name: MERCHANDISE_OFFERING_SCORE
+        expr: CASE WHEN MERCHANDISE_OFFERING_SCORE = 'N/A' THEN NULL ELSE TRY_CAST(MERCHANDISE_OFFERING_SCORE AS INTEGER) END
+        description: Numerical rating given by fans for merchandise selection (1-5 scale, NULL when N/A)
+        data_type: NUMBER(38,0)
+        unique: false
+        synonyms:
+          - merch rating
+          - souvenir score
+          - shop rating
+        sample_values:
+          - '4'
+          - '5'
+          - '3'
+      - name: MERCHANDISE_PRICING_COMMENT
+        expr: MERCHANDISE_PRICING_COMMENT
+        description: Fan's written feedback about merchandise prices
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - merch cost feedback
+          - souvenir price remarks
+          - shop price comments
+        sample_values:
+          - $45 for a basic t-shirt is ridiculous.
+          - Prices are high but quality is good.
+          - Highway robbery on merchandise prices.
+      - name: MERCHANDISE_PRICING_SCORE
+        expr: MERCHANDISE_PRICING_SCORE
+        description: Numerical rating given by fans for merchandise pricing
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - merch cost rating
+          - souvenir price score
+          - shop price rating
+        sample_values:
+          - '2'
+          - '3'
+          - '1'
+      - name: OVERALL_EVENT_COMMENT
+        expr: OVERALL_EVENT_COMMENT
+        description: Fan's written feedback about their entire event experience
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - general feedback
+          - overall remarks
+          - total experience comment
+        sample_values:
+          - Fun game but expensive and logistics were challenging.
+          - Great experience overall, would definitely come back.
+          - Disappointing experience, especially for the cost.
+      - name: OVERALL_EVENT_SCORE
+        expr: OVERALL_EVENT_SCORE
+        description: Numerical rating given by fans for the overall event
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - general rating
+          - overall rating
+          - total experience score
+        sample_values:
+          - '3'
+          - '4'
+          - '2'
+      - name: PARKING_COMMENT
+        expr: PARKING_COMMENT
+        description: Fan's written feedback about parking facilities
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - parking feedback
+          - car park remarks
+          - parking lot comments
+        sample_values:
+          - Parking was a nightmare, took 45 minutes to get out.
+          - Pre-paid parking made it easier, but still crowded.
+          - Had to park blocks away, felt unsafe walking back.
+      - name: PARKING_SCORE
+        expr: CASE WHEN PARKING_SCORE = 'N/A' THEN NULL ELSE TRY_CAST(PARKING_SCORE AS INTEGER) END
+        description: Numerical rating given by fans for parking experience (1-5 scale, NULL when N/A)
+        data_type: NUMBER(38,0)
+        unique: false
+        synonyms:
+          - parking rating
+          - car park score
+          - parking lot rating
+        sample_values:
+          - '1'
+          - '3'
+          - '2'
+      - name: SEAT_LOCATION_COMMENT
+        expr: SEAT_LOCATION_COMMENT
+        description: Fan's written feedback about their seat location
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - seating feedback
+          - seat remarks
+          - seat area comments
+        sample_values:
+          - Upper level but decent view of the court.
+          - Lower level, row 10 - amazing views!
+          - View partially blocked by support beam.
+      - name: SEAT_LOCATION_SCORE
+        expr: SEAT_LOCATION_SCORE
+        description: Numerical rating given by fans for their seating
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - seating rating
+          - seat score
+          - seat area rating
+        sample_values:
+          - '3'
+          - '5'
+          - '2'
+      - name: STADIUM_ACCESS_SCORE
+        expr: STADIUM_ACCESS_SCORE
+        description: Numerical rating given by fans for ease of entering and navigating
+          the stadium
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - venue access rating
+          - arena entry score
+          - facility access rating
+        sample_values:
+          - '2'
+          - '4'
+          - '3'
+      - name: STADIUM_COMMENT
+        expr: STADIUM_COMMENT
+        description: Fan's written feedback about stadium facilities and access
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - venue feedback
+          - arena remarks
+          - facility comments
+        sample_values:
+          - LA Dodgers Stadium needs better signage, got lost finding our section.
+          - LA Dodgers Stadium security was efficient and friendly.
+          - LA Dodgers Stadium entrances were backed up badly.
+      - name: TICKET_PRICE_COMMENT
+        expr: TICKET_PRICE_COMMENT
+        description: Fan's written feedback about ticket pricing
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - admission cost feedback
+          - ticket cost remarks
+          - entry price comments
+        sample_values:
+          - Way too expensive for nosebleed seats. Not worth $150 per ticket.
+          - Got a good deal through season ticket holder exchange.
+          - Prices are outrageous for families. Can't afford to bring kids anymore.
+      - name: TICKET_PRICE_SCORE
+        expr: TICKET_PRICE_SCORE
+        description: Numerical rating given by fans for ticket value
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - admission cost rating
+          - ticket cost score
+          - entry price rating
+        sample_values:
+          - '2'
+          - '4'
+          - '1'
+      - name: COMPANY_NAME
+        expr: COMPANY_NAME
+        description: Name of the organization (Snow Bears) associated with the survey
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - business name
+          - organization name
+          - firm name
+        sample_values:
+          - Major League Basketball Team
+      - name: TOPIC
+        expr: TOPIC
+        description: Main subject category of the feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - subject
+          - category
+          - feedback area
+        sample_values:
+          - Qualtrics Fan Reviews
+      - name: AGGREGATE_COMMENT
+        expr: AGGREGATE_COMMENT
+        description: Combined summary of all written feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - overall feedback
+          - combined comments
+          - total remarks
+        sample_values:
+          - Standard arena food, nothing special but decent quality. Great game, SnowBear
+            was entertaining with the crowd. Good variety of team gear, liked the
+            retro collection. $45 for a basic t-shirt is ridiculous. Fun game but
+            expensive and logistics were challenging. Parking was a nightmare, took
+            45 minutes to get out. Upper level but decent view of the court.
+          - Great variety, loved the local food vendors. Amazing atmosphere, close
+            game, and SnowBear was hilarious! Loved the exclusive game day merchandise.
+            Prices are high but quality is good. Great experience overall, would definitely
+            come back. Pre-paid parking made it easier, but still crowded. Lower level,
+            row 10 - amazing views!
+          - Limited options for vegetarians, everything overpriced. Team lost, but
+            SnowBear made kids happy. Basic selection, nothing unique. Highway robbery
+            on merchandise prices. Disappointing experience, especially for the cost.
+            Had to park blocks away, felt unsafe walking back. View partially blocked
+            by support beam.
+      - name: AGGREGATE_SUMMARY
+        expr: AGGREGATE_SUMMARY
+        description: Condensed overview of all feedback themes
+        data_type: VARCHAR(1000)
+        unique: false
+        synonyms:
+          - overall summary
+          - combined overview
+          - total synopsis
+        sample_values:
+          - snowbear was entertaining with the crowd. good variety of team gear, liked
+            the retro collection. $ 45 for a basic t - shirt is ridiculous. fun game
+            but expensive and logistics were challenging. parking was a nightmare,
+            took 45 minutes to get out
+          - amazing atmosphere, close game, and snowbear was hilarious! loved the
+            exclusive game day merchandise
+          - snowbear made kids happy. basic selection, nothing unique
+      - name: FOOD_SUMMARY
+        expr: FOOD_SUMMARY
+        description: Summary of key points from food-related feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - concession summary
+          - dining overview
+          - food synopsis
+        sample_values:
+          - arena food
+          - local food vendors
+          - limited options for vegetarians, everything overpriced.
+      - name: GAME_EXPERIENCE_SUMMARY
+        expr: GAME_EXPERIENCE_SUMMARY
+        description: Summary of key points from game experience feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - match summary
+          - event overview
+          - game synopsis
+        sample_values:
+          - snowbear
+          - snowbear was hilarious
+          - snowbear made kids happy.
+      - name: MERCHANDISE_OFFERING_SUMMARY
+        expr: MERCHANDISE_OFFERING_SUMMARY
+        description: Summary of key points from merchandise selection feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - merch summary
+          - shop overview
+          - souvenir synopsis
+        sample_values:
+          - team gear, liked the retro collection
+          - unique
+          - wished
+      - name: MERCHANDISE_PRICING_SUMMARY
+        expr: MERCHANDISE_PRICING_SUMMARY
+        description: Summary of key points from merchandise pricing feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - merch price summary
+          - shop cost overview
+          - souvenir price synopsis
+        sample_values:
+          - '45'
+          - prices are high but quality is good.
+          - .
+      - name: OVERALL_EVENT_SUMMARY
+        expr: OVERALL_EVENT_SUMMARY
+        description: Summary of key points from overall event feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - event summary
+          - general overview
+          - total synopsis
+        sample_values:
+          - game
+          - would definitely come back.
+          - for the cost.
+      - name: PARKING_SUMMARY
+        expr: PARKING_SUMMARY
+        description: Summary of key points from parking-related feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - car park summary
+          - lot overview
+          - parking synopsis
+        sample_values:
+          - get out
+          - crowded.
+          - park blocks away, felt unsafe walking back.
+      - name: SEAT_LOCATION_SUMMARY
+        expr: SEAT_LOCATION_SUMMARY
+        description: Summary of key points from seating-related feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - seating summary
+          - seat overview
+          - location synopsis
+        sample_values:
+          - decent view of the court.
+          - amazing views!
+          - support beam.
+      - name: STADIUM_ACCESS_SUMMARY
+        expr: STADIUM_ACCESS_SUMMARY
+        description: Summary of key points from stadium access feedback
+        data_type: VARCHAR(16777216)
+        unique: false
+        synonyms:
+          - venue access summary
+          - arena entry overview
+          - facility access synopsis
+        sample_values:
+          - got lost finding our section
+          - dodgers stadium security
+          - dodgers stadium
+      - name: MAIN_THEME
+        expr: MAIN_THEME
+        description: Primary theme identified from fan feedback
+        data_type: VARCHAR(1000)
+        unique: false
+        synonyms:
+          - primary theme
+          - key topic
+          - main category
+        sample_values:
+          - Parking
+          - Food & Concessions
+          - Game Experience
+      - name: SECONDARY_THEME
+        expr: SECONDARY_THEME
+        description: Secondary theme identified from fan feedback
+        data_type: VARCHAR(1000)
+        unique: false
+        synonyms:
+          - sub theme
+          - minor topic
+          - secondary category
+        sample_values:
+          - Ticket Prices
+          - Game Experience
+          - Food & Concessions
+      - name: SEGMENT
+        expr: SEGMENT
+        description: Primary customer segment classification based on feedback
+        data_type: VARCHAR(1000)
+        unique: false
+        synonyms:
+          - customer group
+          - audience type
+          - visitor category
+        sample_values:
+          - Premium Experience Seeker
+          - Value-Conscious Fan
+          - Experience Critic
+      - name: SEGMENT_ALT
+        expr: SEGMENT_ALT
+        description: Alternative customer segment classification
+        data_type: VARCHAR(1000)
+        unique: false
+        synonyms:
+          - alternative segment
+          - secondary group
+          - other category
+        sample_values:
+          - Dissatisfied Price-Sensitive
+          - Premium Experience Seeker
+          - Budget-Conscious Fan
+      - name: BUSINESS_RECOMMENDATION
+        expr: BUSINESS_RECOMMENDATION
+        description: Actionable business suggestions based on feedback analysis
+        data_type: VARCHAR(8000)
+        unique: false
+        synonyms:
+          - business advice
+          - commercial suggestion
+          - business action
+      - name: COMPLEX_RECOMMENDATION
+        expr: COMPLEX_RECOMMENDATION
+        description: Detailed strategic recommendations derived from feedback analysis
+        data_type: VARCHAR(8000)
+        unique: false
+        synonyms:
+          - detailed advice
+          - comprehensive suggestion
+          - in depth recommendation
+    time_dimensions:
+      - name: REVIEW_DATE
+        expr: REVIEW_DATE
+        description: Date and time when the fan survey was submitted
+        data_type: TIMESTAMP_NTZ(9)
+        unique: false
+        synonyms:
+          - survey date
+          - feedback date
+          - response date
+        sample_values:
+          - '2024-11-28 00:00:00'
+          - '2025-02-24 00:00:00'
+          - '2025-01-31 00:00:00'
+      - name: CREATED_TIMESTAMP
+        expr: CREATED_TIMESTAMP
+        description: Date and time when the survey record was created in the database
+        data_type: TIMESTAMP_NTZ(9)
+        unique: false
+        synonyms:
+          - entry time
+          - submission datetime
+          - record time
+        sample_values:
+          - '2025-07-15 12:36:31.180000'
+    facts:
+      - name: AGGREGATE_SCORE
+        expr: AGGREGATE_SCORE
+        description: Combined overall numerical score calculated from all rating categories
+        data_type: NUMBER(38,0)
+        synonyms:
+          - overall score
+          - combined rating
+          - total score
+        sample_values:
+          - '2'
+          - '4'
+          - '3'
+      - name: AGGREGATE_SENTIMENT
+        expr: AGGREGATE_SENTIMENT
+        description: Primary sentiment score derived from all comments
+        data_type: FLOAT
+        synonyms:
+          - overall sentiment
+          - combined feeling
+          - total mood
+        sample_values:
+          - '0.3'
+          - '0.8'
+          - '-0.4'
+      - name: ALT_AGGREGATE_SENTIMENT
+        expr: ALT_AGGREGATE_SENTIMENT
+        description: Alternative calculation of overall sentiment score
+        data_type: FLOAT
+        synonyms:
+          - secondary sentiment
+          - alternative feeling
+          - other mood
+        sample_values:
+          - '-0.0049999999999999906'
+          - '0.5637500000000001'
+          - '-0.33875'
+      - name: AGGREGATE_SENTIMENT_SPREAD
+        expr: AGGREGATE_SENTIMENT_SPREAD
+        description: Variation between different sentiment scores
+        data_type: FLOAT
+        synonyms:
+          - sentiment distribution
+          - feeling range
+          - mood spread
+        sample_values:
+          - '-0.305'
+          - '-0.23624999999999996'
+          - '0.06125000000000003'
+      - name: FOOD_OFFERING_SENTIMENT
+        expr: FOOD_OFFERING_SENTIMENT
+        description: Sentiment score calculated from food-related comments
+        data_type: FLOAT
+        synonyms:
+          - food mood
+          - concession sentiment
+          - dining feeling
+        sample_values:
+          - '0.18'
+          - '0.6'
+          - '-0.25'
+      - name: GAME_EXPERIENCE_SENTIMENT
+        expr: GAME_EXPERIENCE_SENTIMENT
+        description: Sentiment score calculated from game experience comments
+        data_type: FLOAT
+        synonyms:
+          - match mood
+          - event sentiment
+          - game feeling
+        sample_values:
+          - '0.62'
+          - '0.73'
+          - '0.0'
+      - name: MERCHANDISE_OFFERING_SENTIMENT
+        expr: MERCHANDISE_OFFERING_SENTIMENT
+        description: Sentiment score calculated from merchandise selection comments
+        data_type: FLOAT
+        synonyms:
+          - merch mood
+          - shop sentiment
+          - souvenir feeling
+        sample_values:
+          - '0.38'
+          - '0.58'
+          - '-0.25'
+      - name: MERCHANDISE_PRICING_SENTIMENT
+        expr: MERCHANDISE_PRICING_SENTIMENT
+        description: Sentiment score calculated from merchandise pricing comments
+        data_type: FLOAT
+        synonyms:
+          - merch price mood
+          - shop cost sentiment
+          - souvenir price feeling
+        sample_values:
+          - '-0.67'
+          - '0.35'
+          - '-0.69'
+      - name: OVERALL_EVENT_SENTIMENT
+        expr: OVERALL_EVENT_SENTIMENT
+        description: Sentiment score calculated from overall event comments
+        data_type: FLOAT
+        synonyms:
+          - event mood
+          - general sentiment
+          - total feeling
+        sample_values:
+          - '0.07'
+          - '0.56'
+          - '-0.42'
+      - name: PARKING_SENTIMENT
+        expr: PARKING_SENTIMENT
+        description: Sentiment score calculated from parking-related comments
+        data_type: FLOAT
+        synonyms:
+          - parking mood
+          - car park sentiment
+          - lot feeling
+        sample_values:
+          - '-0.62'
+          - '0.24'
+          - '0.58'
+      - name: SEAT_LOCATION_SENTIMENT
+        expr: SEAT_LOCATION_SENTIMENT
+        description: Sentiment score calculated from seating-related comments
+        data_type: FLOAT
+        synonyms:
+          - seating mood
+          - seat sentiment
+          - location feeling
+        sample_values:
+          - '0.01'
+          - '0.79'
+          - '-0.24'
+      - name: STADIUM_ACCESS_SENTIMENT
+        expr: STADIUM_ACCESS_SENTIMENT
+        description: Sentiment score calculated from stadium access comments
+        data_type: FLOAT
+        synonyms:
+          - venue access mood
+          - arena entry sentiment
+          - facility access feeling
+        sample_values:
+          - '-0.01'
+          - '0.66'
+          - '-0.37'
+      - name: FOOD
+        expr: FOOD
+        description: Binary indicator for food-related feedback presence
+        data_type: NUMBER(38,0)
+        synonyms:
+          - concessions
+          - dining
+          - refreshments
+        sample_values:
+          - '0'
+          - '1'
+      - name: PARKING
+        expr: PARKING
+        description: Binary indicator for parking-related feedback presence
+        data_type: NUMBER(38,0)
+        synonyms:
+          - car park
+          - lot
+          - vehicle space
+        sample_values:
+          - '1'
+          - '0'
+      - name: SEATING
+        expr: SEATING
+        description: Binary indicator for seating-related feedback presence
+        data_type: NUMBER(38,0)
+        synonyms:
+          - seats
+          - seat area
+          - viewing area
+        sample_values:
+          - '0'
+          - '1'
+      - name: MERCHANDISE
+        expr: MERCHANDISE
+        description: Binary indicator for merchandise-related feedback presence
+        data_type: NUMBER(38,0)
+        synonyms:
+          - merch
+          - souvenirs
+          - team store
+        sample_values:
+          - '0'
+          - '1'
+      - name: GAME
+        expr: GAME
+        description: Binary indicator for game experience-related feedback presence
+        data_type: NUMBER(38,0)
+        synonyms:
+          - match
+          - event
+          - competition
+        sample_values:
+          - '0'
+          - '1'
+      - name: TICKET
+        expr: TICKET
+        description: Binary indicator for ticket-related feedback presence
+        data_type: NUMBER(38,0)
+        synonyms:
+          - admission
+          - entry
+          - pass
+        sample_values:
+          - '1'
+          - '0'
+      - name: NO_THEME
+        expr: NO_THEME
+        description: Binary indicator for feedback without clear theme
+        data_type: NUMBER(38,0)
+        synonyms:
+          - unclassified
+          - uncategorized
+          - no category
+        sample_values:
+          - '0'
+          - '1'
+      - name: VIP
+        expr: VIP
+        description: Binary indicator for VIP-related feedback
+        data_type: NUMBER(38,0)
+        synonyms:
+          - premium
+          - exclusive
+          - special access
+        sample_values:
+          - '0'
+          - '1'
