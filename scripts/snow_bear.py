@@ -20,12 +20,16 @@ st.markdown("""
 <style>
     .main-header {
         background: linear-gradient(90deg, #29B5E8 0%, #1E3A8A 100%);
-        color: white;
+        color: white !important;
         padding: 20px;
         border-radius: 10px;
         text-align: center;
         margin-bottom: 30px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .main-header h1, .main-header h3 {
+        color: white !important;
     }
     
     .metric-card {
@@ -73,6 +77,67 @@ st.markdown("""
         margin: 2px;
         display: inline-block;
     }
+    
+    /* Snowflake-themed widget styling */
+    .stSelectbox > div > div > div {
+        border-color: #29B5E8 !important;
+    }
+    
+    /* Multiselect styling */
+    .stMultiSelect > div > div > div {
+        border-color: #29B5E8 !important;
+    }
+    
+    .stMultiSelect [data-baseweb="tag"] {
+        background-color: #29B5E8 !important;
+        color: white !important;
+    }
+    
+    /* Slider styling - target the slider track and thumb */
+    .stSlider > div > div > div > div {
+        background: #29B5E8 !important;
+    }
+    
+    .stSlider [role="slider"] {
+        background-color: #29B5E8 !important;
+    }
+    
+    /* Range slider specific styling */
+    .stSlider .rc-slider-track {
+        background-color: #29B5E8 !important;
+    }
+    
+    .stSlider .rc-slider-handle {
+        border-color: #29B5E8 !important;
+        background-color: #29B5E8 !important;
+    }
+    
+    .stButton > button {
+        background-color: #29B5E8 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+    }
+    
+    .stButton > button:hover {
+        background-color: #1E3A8A !important;
+        color: white !important;
+    }
+    
+    /* Streamlit progress bar and other widgets */
+    .stProgress > div > div > div > div {
+        background-color: #29B5E8 !important;
+    }
+    
+    /* Tabs styling - minimal blue theme without background */
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+        color: #1E3A8A !important;
+    }
+    
+    .stTabs [data-baseweb="tab-list"] button[aria-selected="true"] [data-testid="stMarkdownContainer"] p {
+        color: #29B5E8 !important;
+        font-weight: bold !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -89,6 +154,9 @@ def init_session_state():
         st.session_state.session = None
     if 'error_count' not in st.session_state:
         st.session_state.error_count = 0
+    if 'session_id' not in st.session_state:
+        import uuid
+        st.session_state.session_id = str(uuid.uuid4())[:8]  # Short unique ID
 
 # Initialize session connection without caching
 def get_snowflake_session():
@@ -104,18 +172,26 @@ def get_snowflake_session():
 # Initialize session state
 init_session_state()
 
-# Customer configuration
-CUSTOMER_SCHEMA = "CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER"
-DATABASE = "CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB"
-SCHEMA = "GOLD_LAYER"
-STAGE = "semantic_models"
-
-# Get session
+# Get session first
 session = get_snowflake_session()
 
 if session is None:
     st.error("❌ Unable to connect to Snowflake. Please check your connection.")
     st.stop()
+
+# Customer configuration - COMPATIBLE WITH QUICKSTART
+DATABASE = session.get_current_database()
+SCHEMA = "ANALYTICS"
+CUSTOMER_SCHEMA = f"{DATABASE}.{SCHEMA}"
+STAGE = "semantic_models"
+
+# Data is stored in CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER (from quickstart setup)
+DATA_DATABASE = "CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB"
+DATA_SCHEMA = "GOLD_LAYER"
+DATA_CUSTOMER_SCHEMA = f"{DATA_DATABASE}.{DATA_SCHEMA}"
+
+# Note: Query tags removed due to Snowflake native Streamlit restrictions
+# Native Streamlit apps cannot modify session settings like query_tag
 
 # Using Snowflake logo
 logo_url = "https://logos-world.net/wp-content/uploads/2022/11/Snowflake-Symbol.png"
@@ -139,7 +215,7 @@ def load_main_data():
         if not st.session_state.data_loaded or st.session_state.df is None:
             with st.spinner("❄️ Loading Snow Bear fan data..."):
                 query = f"""
-                SELECT * FROM {CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                SELECT * FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
                 ORDER BY REVIEW_DATE DESC
                 LIMIT 10000
                 """
@@ -157,7 +233,7 @@ def load_themes_data():
     try:
         if st.session_state.themes_df is None:
             query = f"""
-            SELECT * FROM {CUSTOMER_SCHEMA}.EXTRACTED_THEMES_STRUCTURED
+            SELECT * FROM {DATA_CUSTOMER_SCHEMA}.EXTRACTED_THEMES_STRUCTURED
             ORDER BY THEME_NUMBER
             LIMIT 5000
             """
@@ -175,7 +251,8 @@ try:
     themes_df = load_themes_data()
     
     if df.empty:
-        st.error("❌ No data available. Please check your database connection and table permissions.")
+        st.error("❌ No data available. Please ensure the basketball survey data has been loaded and processed.")
+        st.info("💡 Setup Instructions:\n1. Upload basketball survey data to the CSV_DATA_STAGE\n2. Run the data processing pipeline\n3. Refresh this app")
         st.stop()
         
 except Exception as e:
@@ -516,7 +593,7 @@ with tab3:
                 sentiment_bar = alt.Chart(sentiment_chart_df).mark_bar().encode(
                     x=alt.X('Category:N', title='Category'),
                     y=alt.Y('Average_Sentiment:Q', title='Average Sentiment'),
-                    color=alt.Color('Average_Sentiment:Q', scale=alt.Scale(scheme='redyellowgreen'), title='Sentiment'),
+                    color=alt.Color('Average_Sentiment:Q', scale=alt.Scale(scheme='blues'), title='Sentiment'),
                     tooltip=['Category', 'Average_Sentiment']
                 ).properties(
                     title='Average Sentiment by Category',
@@ -679,11 +756,11 @@ with tab6:
         if search_submitted and search_term:
             with st.spinner("🤖 AI-powered search analyzing fan comments..."):
                 try:
-                    # Use the SNOWBEAR_SEARCH_ANALYSIS Cortex Search Service
+                    # Use the SNOWBEAR_SEARCH_ANALYSIS Cortex Search Service - Updated for DataOps
                     search_query = f"""
                     WITH search_results AS (
                         SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-                            'CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB.GOLD_LAYER.SNOWBEAR_SEARCH_ANALYSIS',
+                            '{DATA_DATABASE}.{DATA_SCHEMA}.SNOWBEAR_SEARCH_ANALYSIS',
                             '{{
                                 "query": "{search_term}",
                                 "columns":[
@@ -823,6 +900,47 @@ with tab6:
     except Exception as e:
         st.error(f"Error in Interactive Search: {str(e)}")
         st.info("💡 Try refreshing the page or check your search service setup")
+
+    # --- AI Narrative (Cortex Complete) over last Analyst result ---
+    if st.session_state.get("sb_last_df") is not None:
+        st.markdown("---")
+        st.subheader("🤖 AI Narrative (Cortex Complete)")
+        colx1, colx2, colx3 = st.columns([2,1,1])
+        with colx1:
+            cc_model = st.selectbox("Model", ["llama3.1-8b","llama3.1-70b","mixtral-8x7b","mistral-large"], index=0, key="sb_cc_model")
+        with colx2:
+            cc_temp = st.slider("Temp", 0.0, 1.0, 0.2, 0.1, key="sb_cc_temp")
+        with colx3:
+            cc_tokens = st.number_input("Max Tokens", min_value=200, max_value=8000, value=1500, step=100, key="sb_cc_tokens")
+        prompt_cc = st.text_area("Optional question for the AI about these results (leave blank for general analysis)", value="", height=80, key="sb_cc_prompt")
+        if st.button("Generate Narrative", key="sb_cc_run"):
+            try:
+                sample = json.loads(st.session_state["sb_last_df"].head(50).to_json(orient="records", date_format="iso") )
+                context_obj = {
+                    "columns": list(st.session_state["sb_last_df"].columns),
+                    "row_count": int(len(st.session_state["sb_last_df"])),
+                    "sample_rows": sample,
+                    "original_sql": st.session_state.get("sb_last_sql", "")
+                }
+                context_json = json.dumps(context_obj, ensure_ascii=False).replace("'","''")
+                user_text = (prompt_cc or "Provide an executive-style analysis: key trends, outliers, comparisons, and recommended next steps. Use bullet points where helpful.").replace("'","''")
+                cc_sql = f"""
+                SELECT SNOWFLAKE.CORTEX.COMPLETE(
+                    '{cc_model}',
+                    [
+                        {{'role':'system','content':'You are a senior data analyst. Be concise and insightful.'}},
+                        {{'role':'user','content':'Context JSON: {context_json}\n\nQuestion: {user_text}'}}
+                    ],
+                    {{'temperature': {cc_temp}, 'max_tokens': {int(cc_tokens)}}}
+                ):choices[0]:messages::string AS AI_RESPONSE
+                """
+                cc_df = session.sql(cc_sql).to_pandas()
+                if not cc_df.empty:
+                    st.markdown(cc_df.iloc[0]["AI_RESPONSE"])
+                else:
+                    st.info("No AI response.")
+            except Exception as e:
+                st.error(f"Cortex Complete error: {e}")
 
 # Tab 7: AI Assistant
 with tab7:
@@ -965,48 +1083,25 @@ with tab7:
                         
                         elif item["type"] == "sql":
                             generated_sql = item["statement"]
-                            
-                            st.markdown("### 🔍 Generated SQL")
-                            st.code(generated_sql, language="sql")
-                            
-                            # Auto-execute the generated SQL
-                            st.markdown("### 📈 Results")
+                            # Collapsible SQL (auto-collapsed)
+                            with st.expander("🔍 Generated SQL", expanded=False):
+                                st.code(generated_sql, language="sql")
+
+                            # Execute the generated SQL ONCE, persist result for interactive visuals
                             with st.spinner("Executing generated SQL..."):
                                 try:
                                     results_df = session.sql(generated_sql.strip(";")).to_pandas()
-                                    
+                                    # Persist for explore section below
+                                    st.session_state["sb_last_sql"] = generated_sql.strip(";")
+                                    st.session_state["sb_last_df"] = results_df
                                     if not results_df.empty:
-                                        st.success(f"✅ Query executed successfully! ({len(results_df)} rows)")
-                                        
-                                        # Show results with charts
-                                        if len(results_df) > 1:
-                                            data_tab, line_tab, bar_tab = st.tabs(["Data", "Line Chart", "Bar Chart"])
-                                            
-                                            with data_tab:
-                                                st.dataframe(results_df, use_container_width=True)
-                                            
-                                            if len(results_df.columns) > 1:
-                                                chart_df = results_df.set_index(results_df.columns[0])
-                                                
-                                                with line_tab:
-                                                    try:
-                                                        st.line_chart(chart_df)
-                                                    except Exception as e:
-                                                        st.write(f"Line chart not available: {e}")
-                                                
-                                                with bar_tab:
-                                                    try:
-                                                        st.bar_chart(chart_df)
-                                                    except Exception as e:
-                                                        st.write(f"Bar chart not available: {e}")
-                                        else:
-                                            st.dataframe(results_df, use_container_width=True)
+                                        st.success(f"✅ Query executed successfully! {len(results_df)} rows. See 'Explore Result' below for charts and data.")
                                     else:
                                         st.warning("Query executed but returned no results.")
-                                        
                                 except Exception as e:
                                     st.error(f"Error executing generated SQL: {e}")
-                                    st.code(generated_sql, language="sql")
+                                    with st.expander("SQL that failed", expanded=False):
+                                        st.code(generated_sql, language="sql")
                         
                         elif item["type"] == "suggestions":
                             st.markdown("### 💡 Suggestions")
@@ -1022,11 +1117,179 @@ with tab7:
                 st.error(f"AI Assistant error: {str(e)}")
                 st.info("💡 Note: Make sure your Bulls semantic model is created and accessible")
     
+    # Interactive visuals and AI narrative for the last Analyst result
+    if st.session_state.get("sb_last_df") is not None:
+        st.markdown("---")
+        st.subheader("🔎 Explore Result (Data/Bar/Line)")
+        last_df = st.session_state["sb_last_df"]
+        view = st.radio("View", ["Data", "Bar", "Line"], horizontal=True, key="sb_view")
+
+        # Identify numeric vs others
+        columns = list(last_df.columns)
+        numeric_cols = [c for c in columns if pd.api.types.is_numeric_dtype(last_df[c])]
+        non_numeric_cols = [c for c in columns if c not in numeric_cols]
+
+        def apply_grain(df: pd.DataFrame, col: str, grain: str) -> pd.DataFrame:
+            if col not in df.columns:
+                return df
+            try:
+                dt = pd.to_datetime(df[col], errors="coerce")
+                if dt.notna().sum() == 0:
+                    return df
+                if grain == "day":
+                    df[col] = dt.dt.to_period('D').dt.to_timestamp()
+                elif grain == "quarter":
+                    df[col] = dt.dt.to_period('Q').dt.to_timestamp()
+                elif grain == "year":
+                    df[col] = dt.dt.to_period('Y').dt.to_timestamp()
+                else:
+                    df[col] = dt.dt.to_period('M').dt.to_timestamp()
+            except Exception:
+                pass
+            return df
+
+        if view == "Data":
+            st.dataframe(last_df, use_container_width=True)
+
+        elif view == "Bar":
+            c1, c2, c3 = st.columns([2,1,1])
+            with c1:
+                bar_dim = st.selectbox("Dimension", options=non_numeric_cols or columns, key="sb_bar_dim")
+            with c2:
+                stacked = st.checkbox("Stacked", value=True, key="sb_bar_stacked")
+            # Grain for time-like
+            with c3:
+                grain = st.selectbox("Grain", ["month","day","quarter","year"], index=0, key="sb_bar_grain") if bar_dim in columns else None
+
+            series = st.multiselect("Series (metrics)", options=numeric_cols, default=numeric_cols[:2], key="sb_bar_series")
+            if series:
+                df_plot = last_df[[bar_dim] + series].copy() if bar_dim in last_df.columns else last_df[series].copy()
+                if grain and bar_dim in df_plot.columns:
+                    df_plot = apply_grain(df_plot, bar_dim, grain)
+
+                # If time-like, create discrete label and order for proper side-by-side grouping
+                use_label = False
+                if bar_dim in df_plot.columns and pd.api.types.is_datetime64_any_dtype(df_plot[bar_dim]):
+                    try:
+                        ts = pd.to_datetime(df_plot[bar_dim], errors="coerce")
+                        if grain == "day":
+                            x_label = ts.dt.strftime('%b %d %Y')
+                        elif grain == "quarter":
+                            x_label = ts.dt.to_period('Q').astype(str)
+                        elif grain == "year":
+                            x_label = ts.dt.strftime('%Y')
+                        else:
+                            x_label = ts.dt.strftime('%b %Y')
+                        df_plot["X_LABEL"] = x_label
+                        df_plot["X_ORDER"] = ts.view('int64')
+                        use_label = True
+                    except Exception:
+                        use_label = False
+
+                id_vars = []
+                if bar_dim in df_plot.columns:
+                    id_vars.append(bar_dim)
+                if use_label:
+                    id_vars.extend(["X_LABEL", "X_ORDER"])  
+                long_df = df_plot.melt(id_vars=id_vars, value_vars=series, var_name="Series", value_name="Value")
+                if use_label:
+                    long_df = long_df.sort_values("X_ORDER")
+                    x_enc = alt.X("X_LABEL:N", sort=None, title=bar_dim)
+                else:
+                    x_enc = alt.X(f"{bar_dim}:{'T' if (bar_dim in df_plot.columns and pd.api.types.is_datetime64_any_dtype(df_plot[bar_dim])) else 'N'}") if bar_dim in df_plot.columns else alt.X("Series:N")
+                if stacked:
+                    chart = alt.Chart(long_df).mark_bar().encode(x=x_enc, y=alt.Y("Value:Q", stack="zero"), color="Series:N", tooltip=[bar_dim if bar_dim in df_plot.columns else "Series", "Value:Q"]).properties(height=420)
+                else:
+                    chart = alt.Chart(long_df).mark_bar().encode(x=x_enc, y=alt.Y("Value:Q", stack=None), color="Series:N", xOffset="Series:N", tooltip=[(alt.Tooltip("X_LABEL:N", title=bar_dim) if use_label else alt.Tooltip(f"{bar_dim}:{'T' if (bar_dim in df_plot.columns and pd.api.types.is_datetime64_any_dtype(df_plot[bar_dim])) else 'N'}", title=bar_dim)) if bar_dim in df_plot.columns else alt.Tooltip("Series:N"), "Value:Q"]).properties(height=420)
+                st.altair_chart(chart, use_container_width=True)
+            else:
+                st.info("Select at least one numeric metric.")
+
+        elif view == "Line":
+            c1, c2, c3 = st.columns([2,2,1])
+            with c1:
+                line_dim = st.selectbox("Dimension", options=columns, key="sb_line_dim")
+            with c2:
+                primary = st.multiselect("Primary series (metrics)", options=numeric_cols, default=numeric_cols[:2], key="sb_line_primary")
+            with c3:
+                grain = st.selectbox("Grain", ["month","day","quarter","year"], index=0, key="sb_line_grain")
+            secondary = st.selectbox("Secondary (optional, RHS)", options=["(none)"] + [c for c in numeric_cols if c not in primary], key="sb_line_secondary")
+
+            if primary:
+                df_plot = last_df.copy()
+                if grain:
+                    df_plot = apply_grain(df_plot, line_dim, grain)
+                # primary layer
+                melt_cols = [line_dim] + primary
+                if line_dim not in df_plot.columns:
+                    st.warning("Selected dimension not in results; showing data only.")
+                    st.dataframe(last_df, use_container_width=True)
+                else:
+                    df_primary = df_plot[melt_cols].copy()
+                    for m in primary:
+                        df_primary[m] = pd.to_numeric(df_primary[m], errors="coerce")
+                    long_p = df_primary.melt(id_vars=[line_dim], value_vars=primary, var_name="Series", value_name="Value")
+                    x_type = "T" if pd.api.types.is_datetime64_any_dtype(df_plot[line_dim]) else "N"
+                    layer_primary = alt.Chart(long_p).mark_line(point=True).encode(x=alt.X(f"{line_dim}:{x_type}"), y=alt.Y("Value:Q", title="Value"), color="Series:N", tooltip=[line_dim, "Series", "Value:Q"]).properties(height=420)
+                    if secondary and secondary != "(none)":
+                        df_sec = df_plot[[line_dim, secondary]].copy()
+                        df_sec[secondary] = pd.to_numeric(df_sec[secondary], errors="coerce")
+                        layer_secondary = alt.Chart(df_sec).mark_line(point=True, color="#ef4444").encode(x=alt.X(f"{line_dim}:{x_type}"), y=alt.Y(f"{secondary}:Q", axis=alt.Axis(title=secondary, titleColor="#ef4444")), tooltip=[line_dim, alt.Tooltip(f"{secondary}:Q")])
+                        st.altair_chart(alt.layer(layer_primary, layer_secondary).resolve_scale(y='independent'), use_container_width=True)
+                    else:
+                        st.altair_chart(layer_primary, use_container_width=True)
+
+    # Cortex Complete narrative over last Analyst result
+    if st.session_state.get("sb_last_df") is not None:
+        st.markdown("---")
+        st.subheader("🤖 AI Narrative (Cortex Complete)")
+        colx1, colx2, colx3 = st.columns([2,1,1])
+        with colx1:
+            cc_model = st.selectbox("Model", ["llama3.1-8b","llama3.1-70b","mixtral-8x7b","mistral-large"], index=0, key="sb_cc_model_tab7")
+        with colx2:
+            cc_temp = st.slider("Temp", 0.0, 1.0, 0.2, 0.1, key="sb_cc_temp_tab7")
+        with colx3:
+            cc_tokens = st.number_input("Max Tokens", min_value=200, max_value=8000, value=1500, step=100, key="sb_cc_tokens_tab7")
+        prompt_cc = st.text_area("Optional question for the AI about these results (leave blank for general analysis)", value="", height=80, key="sb_cc_prompt_tab7")
+        if st.button("Generate Narrative", key="sb_cc_run_tab7"):
+            try:
+                sample = json.loads(st.session_state["sb_last_df"].head(50).to_json(orient="records", date_format="iso") )
+                context_obj = {
+                    "columns": list(st.session_state["sb_last_df"].columns),
+                    "row_count": int(len(st.session_state["sb_last_df"])),
+                    "sample_rows": sample,
+                    "original_sql": st.session_state.get("sb_last_sql", "")
+                }
+                context_json = json.dumps(context_obj, ensure_ascii=False).replace("'","''")
+                user_text = (prompt_cc or "Provide an executive-style analysis: key trends, outliers, comparisons, and recommended next steps. Use bullet points where helpful.").replace("'","''")
+                cc_sql = f"""
+                SELECT SNOWFLAKE.CORTEX.COMPLETE(
+                    '{cc_model}',
+                    [
+                        {{'role':'system','content':'You are a senior data analyst. Be concise and insightful.'}},
+                        {{'role':'user','content':'Context JSON: {context_json}\n\nQuestion: {user_text}'}}
+                    ],
+                    {{'temperature': {cc_temp}, 'max_tokens': {int(cc_tokens)}}}
+                ):choices[0]:messages::string AS AI_RESPONSE
+                """
+                cc_df = session.sql(cc_sql).to_pandas()
+                if not cc_df.empty:
+                    st.markdown(cc_df.iloc[0]["AI_RESPONSE"])
+                else:
+                    st.info("No AI response.")
+            except Exception as e:
+                st.error(f"Cortex Complete error: {e}")
+
     # Display chat history
     if st.session_state.analyst_messages:
         st.markdown("### 💬 Conversation History")
         for message_index, message in enumerate(st.session_state.analyst_messages):
-            with st.chat_message(message["role"]):
+            # Use container instead of chat_message for compatibility
+            message_container = st.container()
+            with message_container:
+                role_emoji = "🙋‍♂️" if message["role"] == "user" else "🤖"
+                st.markdown(f"**{role_emoji} {message['role'].title()}:**")
+                
                 if message["role"] == "user":
                     st.markdown(message["content"][0]["text"])
                 else:
@@ -1049,7 +1312,7 @@ with tab7:
                 try:
                     pain_points_query = f"""
                     SELECT MAIN_THEME, AVG(AGGREGATE_SCORE) as avg_score, COUNT(*) as count
-                    FROM {CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                    FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
                     WHERE AGGREGATE_SCORE <= 2
                     GROUP BY MAIN_THEME
                     ORDER BY count DESC
@@ -1070,7 +1333,7 @@ with tab7:
                 try:
                     highlights_query = f"""
                     SELECT MAIN_THEME, AVG(AGGREGATE_SCORE) as avg_score, COUNT(*) as count
-                    FROM {CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                    FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
                     WHERE AGGREGATE_SCORE >= 4
                     GROUP BY MAIN_THEME
                     ORDER BY count DESC
@@ -1093,7 +1356,7 @@ with tab7:
                     SELECT SEGMENT, AVG(AGGREGATE_SCORE) as avg_score, 
                            AVG(AGGREGATE_SENTIMENT) as avg_sentiment,
                            COUNT(*) as count
-                    FROM {CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                    FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
                     GROUP BY SEGMENT
                     ORDER BY avg_score DESC
                     """
@@ -1121,4 +1384,4 @@ if st.sidebar.checkbox("🔧 Show Debug Info"):
     st.sidebar.markdown("### Debug Information")
     st.sidebar.markdown(f"**Data Shape:** {df.shape if not df.empty else 'No data'}")
     st.sidebar.markdown(f"**Filtered Shape:** {filtered_df.shape if not filtered_df.empty else 'No filtered data'}")
-    st.sidebar.markdown(f"**Error Count:** {st.session_state.error_count}") 
+    st.sidebar.markdown(f"**Error Count:** {st.session_state.error_count}")
