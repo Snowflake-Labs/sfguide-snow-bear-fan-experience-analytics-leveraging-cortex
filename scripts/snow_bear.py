@@ -1385,14 +1385,3 @@ if st.sidebar.checkbox("🔧 Show Debug Info"):
     st.sidebar.markdown(f"**Data Shape:** {df.shape if not df.empty else 'No data'}")
     st.sidebar.markdown(f"**Filtered Shape:** {filtered_df.shape if not filtered_df.empty else 'No filtered data'}")
     st.sidebar.markdown(f"**Error Count:** {st.session_state.error_count}")
-    if not df.empty:
-        themes_count = len(df['MAIN_THEME'].dropna().unique()) if 'MAIN_THEME' in df.columns else 0
-        segments_count = len(df['SEGMENT'].dropna().unique()) if 'SEGMENT' in df.columns else 0
-        st.sidebar.markdown(f"**Available Themes:** {themes_count}")
-        st.sidebar.markdown(f"**Available Segments:** {segments_count}")
-        if 'MAIN_THEME' in df.columns and themes_count > 0:
-            sample_themes = df['MAIN_THEME'].dropna().unique()[:3].tolist()
-            st.sidebar.markdown(f"**Sample Themes:** {sample_themes}")
-        if 'SEGMENT' in df.columns and segments_count > 0:
-            sample_segments = df['SEGMENT'].dropna().unique()[:3].tolist()
-            st.sidebar.markdown(f"**Sample Segments:** {sample_segments}")
