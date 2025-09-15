@@ -182,11 +182,10 @@ if session is None:
 # Customer configuration - COMPATIBLE WITH QUICKSTART
 DATABASE = session.get_current_database()
 SCHEMA = "ANALYTICS"
-CUSTOMER_SCHEMA = f"{DATABASE}.{SCHEMA}"
+CUSTOMER_SCHEMA = f"SNOW_BEAR_DB.ANALYTICS"
 STAGE = "semantic_models"
 
-# Note: Data now stored in SNOW_BEAR_DB schemas to match DataOps structure
-# This allows the app to use dynamic database referencing like DataOps
+# Note: Data stored in SNOW_BEAR_DB schemas - hardcoded for quickstart compatibility
 
 # Note: Query tags removed due to Snowflake native Streamlit restrictions
 # Native Streamlit apps cannot modify session settings like query_tag
@@ -213,7 +212,7 @@ def load_main_data():
         if not st.session_state.data_loaded or st.session_state.df is None:
             with st.spinner("❄️ Loading Snow Bear fan data..."):
                 query = f"""
-                SELECT * FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                SELECT * FROM SNOW_BEAR_DB.GOLD_LAYER.QUALTRICS_SCORECARD
                 ORDER BY REVIEW_DATE DESC
                 LIMIT 10000
                 """
@@ -231,7 +230,7 @@ def load_themes_data():
     try:
         if st.session_state.themes_df is None:
             query = f"""
-            SELECT * FROM {DATA_CUSTOMER_SCHEMA}.EXTRACTED_THEMES_STRUCTURED
+            SELECT * FROM SNOW_BEAR_DB.GOLD_LAYER.EXTRACTED_THEMES_STRUCTURED
             ORDER BY THEME_NUMBER
             LIMIT 5000
             """
@@ -250,7 +249,7 @@ try:
     
     if df.empty:
         st.error("❌ No data available. Please ensure the basketball survey data has been loaded and processed.")
-        st.info("💡 Setup Instructions:\n1. Upload basketball survey data to the CSV_DATA_STAGE\n2. Run the data processing pipeline\n3. Refresh this app")
+        st.info("💡 Setup Instructions:\n1. Upload basketball survey data to the SNOW_BEAR_DATA_STAGE\n2. Run the Snow Bear analytics notebook\n3. Refresh this app")
         st.stop()
         
 except Exception as e:
@@ -758,7 +757,7 @@ with tab6:
                     search_query = f"""
                     WITH search_results AS (
                         SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-                            '{DATABASE}.GOLD_LAYER.SNOWBEAR_SEARCH_ANALYSIS',
+                            'SNOW_BEAR_DB.GOLD_LAYER.SNOWBEAR_SEARCH_ANALYSIS',
                             '{{
                                 "query": "{search_term}",
                                 "columns":[
@@ -946,7 +945,7 @@ with tab7:
     st.markdown("*Ask questions about your fan data in natural language*")
     
     # Get available semantic models
-    cmd = f"""ls @{DATABASE}.{SCHEMA}.{STAGE}"""
+    cmd = f"""ls @SNOW_BEAR_DB.ANALYTICS.semantic_models"""
     try:
         semantic_files = session.sql(cmd).collect()
         list_files = []
@@ -1055,7 +1054,7 @@ with tab7:
         with st.spinner("AI Assistant is analyzing your fan data..."):
             try:
                 # Call Cortex Analyst API with proper semantic model
-                semantic_model = f"@{DATABASE}.{SCHEMA}.{FILE}"
+                semantic_model = f"@SNOW_BEAR_DB.ANALYTICS.{FILE}"
                 response = send_analyst_message(analyst_query, semantic_model)
                 
                 if response and "message" in response:
@@ -1310,7 +1309,7 @@ with tab7:
                 try:
                     pain_points_query = f"""
                     SELECT MAIN_THEME, AVG(AGGREGATE_SCORE) as avg_score, COUNT(*) as count
-                    FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                    FROM SNOW_BEAR_DB.GOLD_LAYER.QUALTRICS_SCORECARD
                     WHERE AGGREGATE_SCORE <= 2
                     GROUP BY MAIN_THEME
                     ORDER BY count DESC
@@ -1331,7 +1330,7 @@ with tab7:
                 try:
                     highlights_query = f"""
                     SELECT MAIN_THEME, AVG(AGGREGATE_SCORE) as avg_score, COUNT(*) as count
-                    FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                    FROM SNOW_BEAR_DB.GOLD_LAYER.QUALTRICS_SCORECARD
                     WHERE AGGREGATE_SCORE >= 4
                     GROUP BY MAIN_THEME
                     ORDER BY count DESC
@@ -1354,7 +1353,7 @@ with tab7:
                     SELECT SEGMENT, AVG(AGGREGATE_SCORE) as avg_score, 
                            AVG(AGGREGATE_SENTIMENT) as avg_sentiment,
                            COUNT(*) as count
-                    FROM {DATA_CUSTOMER_SCHEMA}.QUALTRICS_SCORECARD
+                    FROM SNOW_BEAR_DB.GOLD_LAYER.QUALTRICS_SCORECARD
                     GROUP BY SEGMENT
                     ORDER BY avg_score DESC
                     """
