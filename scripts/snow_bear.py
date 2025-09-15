@@ -248,7 +248,8 @@ def load_themes_data():
 # Load data
 try:
     df = load_main_data()
-    themes_df = load_themes_data()
+    # Note: themes_df not used in quickstart version
+    themes_df = pd.DataFrame()  # Empty dataframe for compatibility
     
     if df.empty:
         st.error("❌ No data available. Please ensure the basketball survey data has been loaded and processed.")
@@ -961,7 +962,7 @@ with tab7:
     except Exception as e:
         st.error(f"Error accessing semantic models: {e}")
         st.info("💡 Note: Make sure semantic models are uploaded to the stage")
-        list_files = ["semantic_models/bulls_fan_360.yaml"]  # Default fallback
+        list_files = ["semantic_models/snowbear_fan_360.yaml"]  # Default fallback
     
     # Semantic model selection with session state
     if 'selected_semantic_model' not in st.session_state:
