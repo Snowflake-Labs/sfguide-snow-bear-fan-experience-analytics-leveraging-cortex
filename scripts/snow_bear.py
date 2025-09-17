@@ -93,40 +93,44 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Slider styling - comprehensive styling for track, rail, and handle */
-    /* Main slider track (the active line) */
-    .stSlider > div > div > div > div {
-        background: #29B5E8 !important;
-    }
-    
-    /* Slider handle/thumb (the dot) */
-    .stSlider [role="slider"] {
+    /* Slider styling - target the actual slider track line */
+    /* BaseWeb slider track (the actual line) */
+    .stSlider div[data-baseweb="slider"] div[data-baseweb="slider-track"] {
         background-color: #29B5E8 !important;
     }
     
-    /* Range slider track (active portion) */
+    /* BaseWeb slider track fill (active portion) */
+    .stSlider div[data-baseweb="slider"] div[data-baseweb="slider-track-fill"] {
+        background-color: #29B5E8 !important;
+    }
+    
+    /* BaseWeb slider thumb (the dot) */
+    .stSlider div[data-baseweb="slider"] div[data-baseweb="slider-thumb"] {
+        background-color: #29B5E8 !important;
+        border-color: #29B5E8 !important;
+    }
+    
+    /* Range slider - RC slider components */
     .stSlider .rc-slider-track {
         background-color: #29B5E8 !important;
     }
     
-    /* Range slider rail (inactive portion) */
     .stSlider .rc-slider-rail {
-        background-color: #29B5E8 !important;
-        opacity: 0.3;
+        background-color: #e0e0e0 !important;
     }
     
-    /* Range slider handle */
     .stSlider .rc-slider-handle {
         border-color: #29B5E8 !important;
         background-color: #29B5E8 !important;
     }
     
-    /* Additional targeting for different slider components */
-    .stSlider div[data-baseweb="slider"] > div > div {
+    /* Additional BaseWeb targeting */
+    .stSlider [data-baseweb="slider"] [role="slider"] {
         background-color: #29B5E8 !important;
     }
     
-    .stSlider div[data-baseweb="slider"] > div > div > div {
+    /* Override any default track styling */
+    .stSlider div div div[role="slider"] {
         background-color: #29B5E8 !important;
     }
     
