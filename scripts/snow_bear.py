@@ -93,45 +93,67 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Slider styling - target the actual slider track line */
-    /* BaseWeb slider track (the actual line) */
-    .stSlider div[data-baseweb="slider"] div[data-baseweb="slider-track"] {
+    /* Slider styling - comprehensive override for all slider track elements */
+    /* Target all possible slider track variations */
+    .stSlider div[data-baseweb="slider"] > div > div:first-child {
+        background: #29B5E8 !important;
+    }
+    
+    .stSlider div[data-baseweb="slider"] > div > div:last-child {
+        background: #29B5E8 !important;
+    }
+    
+    /* Direct targeting of slider track elements */
+    .stSlider div[data-baseweb="slider"] div {
         background-color: #29B5E8 !important;
     }
     
-    /* BaseWeb slider track fill (active portion) */
-    .stSlider div[data-baseweb="slider"] div[data-baseweb="slider-track-fill"] {
-        background-color: #29B5E8 !important;
+    /* Override the track fill specifically */
+    .stSlider div[data-baseweb="slider"] > div > div[style*="background"] {
+        background: #29B5E8 !important;
     }
     
-    /* BaseWeb slider thumb (the dot) */
-    .stSlider div[data-baseweb="slider"] div[data-baseweb="slider-thumb"] {
+    /* Target the thumb/handle */
+    .stSlider div[data-baseweb="slider"] div[role="slider"] {
         background-color: #29B5E8 !important;
         border-color: #29B5E8 !important;
     }
     
-    /* Range slider - RC slider components */
-    .stSlider .rc-slider-track {
-        background-color: #29B5E8 !important;
+    /* CSS custom property override */
+    .stSlider {
+        --primary-color: #29B5E8;
+        --slider-color: #29B5E8;
     }
     
-    .stSlider .rc-slider-rail {
-        background-color: #e0e0e0 !important;
+    /* Force override with higher specificity */
+    .stSlider div[data-baseweb="slider"] div div div {
+        background: #29B5E8 !important;
     }
     
-    .stSlider .rc-slider-handle {
-        border-color: #29B5E8 !important;
-        background-color: #29B5E8 !important;
+    /* Range slider specific - more aggressive targeting */
+    .stSlider * {
+        --primary-color: #29B5E8 !important;
     }
     
-    /* Additional BaseWeb targeting */
-    .stSlider [data-baseweb="slider"] [role="slider"] {
-        background-color: #29B5E8 !important;
+    /* Fix slider number labels - blue text, no background */
+    .stSlider div[data-baseweb="slider"] span {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #29B5E8 !important;
+        padding: 0 !important;
     }
     
-    /* Override any default track styling */
-    .stSlider div div div[role="slider"] {
-        background-color: #29B5E8 !important;
+    /* Target value labels specifically */
+    .stSlider div[data-testid*="stMarkdown"] {
+        background: transparent !important;
+        color: #29B5E8 !important;
+    }
+    
+    /* Override any span elements in slider with backgrounds */
+    .stSlider span {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #29B5E8 !important;
     }
     
     .stButton > button {
