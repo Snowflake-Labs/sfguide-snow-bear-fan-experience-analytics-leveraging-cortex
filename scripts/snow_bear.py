@@ -945,7 +945,7 @@ with tab7:
     except Exception as e:
         st.error(f"Error accessing semantic models: {e}")
         st.info("💡 Note: Make sure semantic models are uploaded to the stage")
-        list_files = ["semantic_models/snowbear_fan_360.yaml"]  # Default fallback
+        list_files = ["semantic_models/snow_bear_fan_360.yaml"]  # Default fallback
     
     # Semantic model selection with session state
     if 'selected_semantic_model' not in st.session_state:
