@@ -118,24 +118,17 @@ SHOW DATABASES LIKE 'SNOW_BEAR_DB';
 -- TEARDOWN SCRIPT (Uncomment lines below to clean up all resources)
 -- ============================================================================
 
-/*
+
 -- Snow Bear Analytics Teardown Script
 -- Uncomment and run these lines to remove all objects created during the quickstart
 
--- Switch to ACCOUNTADMIN role for cleanup
--- Switch to ACCOUNTADMIN role for cleanup
-USE ROLE ACCOUNTADMIN;
+-- USE ROLE ACCOUNTADMIN;
 
-USE DATABASE SNOWFLAKE;
-USE SCHEMA INFORMATION_SCHEMA;
+-- USE DATABASE SNOWFLAKE;
+-- USE SCHEMA INFORMATION_SCHEMA;
 
--- Drop the database created during setup (this will cascade to remove all contained objects)
--- Note: This automatically removes all schemas, tables, stages, notebooks, and Streamlit apps
-DROP DATABASE IF EXISTS SNOW_BEAR_DB;
+-- DROP DATABASE IF EXISTS SNOW_BEAR_DB;
+-- DROP ROLE IF EXISTS snow_bear_data_scientist;
 
--- Drop the warehouse created during setup
-DROP WAREHOUSE IF EXISTS snow_bear_wh;
+-- DROP WAREHOUSE IF EXISTS snow_bear_wh;
 
--- Drop the role created during setup
-DROP ROLE IF EXISTS snow_bear_data_scientist;
-*/
