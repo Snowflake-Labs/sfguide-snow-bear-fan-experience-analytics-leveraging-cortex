@@ -93,67 +93,16 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Slider styling - comprehensive override for all slider track elements */
-    /* Target all possible slider track variations */
-    .stSlider div[data-baseweb="slider"] > div > div:first-child {
-        background: #29B5E8 !important;
-    }
-    
-    .stSlider div[data-baseweb="slider"] > div > div:last-child {
-        background: #29B5E8 !important;
-    }
-    
-    /* Direct targeting of slider track elements */
-    .stSlider div[data-baseweb="slider"] div {
-        background-color: #29B5E8 !important;
-    }
-    
-    /* Override the track fill specifically */
-    .stSlider div[data-baseweb="slider"] > div > div[style*="background"] {
-        background: #29B5E8 !important;
-    }
-    
-    /* Target the thumb/handle */
-    .stSlider div[data-baseweb="slider"] div[role="slider"] {
+    /* Slider styling - minimal and safe approach */
+    /* Only target the slider thumb/handle (the dot) */
+    .stSlider [role="slider"] {
         background-color: #29B5E8 !important;
         border-color: #29B5E8 !important;
     }
     
-    /* CSS custom property override */
-    .stSlider {
-        --primary-color: #29B5E8;
-        --slider-color: #29B5E8;
-    }
-    
-    /* Force override with higher specificity */
-    .stSlider div[data-baseweb="slider"] div div div {
-        background: #29B5E8 !important;
-    }
-    
-    /* Range slider specific - more aggressive targeting */
-    .stSlider * {
-        --primary-color: #29B5E8 !important;
-    }
-    
-    /* Fix slider number labels - blue text, no background */
-    .stSlider div[data-baseweb="slider"] span {
-        background: transparent !important;
-        background-color: transparent !important;
-        color: #29B5E8 !important;
-        padding: 0 !important;
-    }
-    
-    /* Target value labels specifically */
-    .stSlider div[data-testid*="stMarkdown"] {
-        background: transparent !important;
-        color: #29B5E8 !important;
-    }
-    
-    /* Override any span elements in slider with backgrounds */
-    .stSlider span {
-        background: transparent !important;
-        background-color: transparent !important;
-        color: #29B5E8 !important;
+    /* Try to target track fill - but very specific */
+    .stSlider div[style*="background-color"][style*="rgb"] {
+        background-color: #29B5E8 !important;
     }
     
     .stButton > button {
