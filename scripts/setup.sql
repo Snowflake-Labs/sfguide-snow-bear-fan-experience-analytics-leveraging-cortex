@@ -123,13 +123,11 @@ SHOW DATABASES LIKE 'SNOW_BEAR_DB';
 -- Uncomment and run these lines to remove all objects created during the quickstart
 
 -- Switch to ACCOUNTADMIN role for cleanup
+-- Switch to ACCOUNTADMIN role for cleanup
 USE ROLE ACCOUNTADMIN;
 
--- Reset session context to avoid "database does not exist" errors
--- This prevents context conflicts when dropping the database
 USE DATABASE SNOWFLAKE;
 USE SCHEMA INFORMATION_SCHEMA;
-USE WAREHOUSE COMPUTE_WH;
 
 -- Drop the database created during setup (this will cascade to remove all contained objects)
 -- Note: This automatically removes all schemas, tables, stages, notebooks, and Streamlit apps
@@ -140,9 +138,4 @@ DROP WAREHOUSE IF EXISTS snow_bear_wh;
 
 -- Drop the role created during setup
 DROP ROLE IF EXISTS snow_bear_data_scientist;
-
--- Verification: Check that objects have been removed
-SHOW DATABASES LIKE 'SNOW_BEAR_DB';
-SHOW WAREHOUSES LIKE 'snow_bear_wh';
-SHOW ROLES LIKE 'snow_bear_data_scientist';
 */
