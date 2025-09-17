@@ -93,16 +93,10 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Slider styling - minimal and safe approach */
-    /* Only target the slider thumb/handle (the dot) */
+    /* Slider styling - ONLY the thumb, nothing else */
     .stSlider [role="slider"] {
         background-color: #29B5E8 !important;
         border-color: #29B5E8 !important;
-    }
-    
-    /* Try to target track fill - but very specific */
-    .stSlider div[style*="background-color"][style*="rgb"] {
-        background-color: #29B5E8 !important;
     }
     
     .stButton > button {
