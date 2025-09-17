@@ -93,22 +93,40 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Slider styling - target the slider track and thumb */
+    /* Slider styling - comprehensive styling for track, rail, and handle */
+    /* Main slider track (the active line) */
     .stSlider > div > div > div > div {
         background: #29B5E8 !important;
     }
     
+    /* Slider handle/thumb (the dot) */
     .stSlider [role="slider"] {
         background-color: #29B5E8 !important;
     }
     
-    /* Range slider specific styling */
+    /* Range slider track (active portion) */
     .stSlider .rc-slider-track {
         background-color: #29B5E8 !important;
     }
     
+    /* Range slider rail (inactive portion) */
+    .stSlider .rc-slider-rail {
+        background-color: #29B5E8 !important;
+        opacity: 0.3;
+    }
+    
+    /* Range slider handle */
     .stSlider .rc-slider-handle {
         border-color: #29B5E8 !important;
+        background-color: #29B5E8 !important;
+    }
+    
+    /* Additional targeting for different slider components */
+    .stSlider div[data-baseweb="slider"] > div > div {
+        background-color: #29B5E8 !important;
+    }
+    
+    .stSlider div[data-baseweb="slider"] > div > div > div {
         background-color: #29B5E8 !important;
     }
     
