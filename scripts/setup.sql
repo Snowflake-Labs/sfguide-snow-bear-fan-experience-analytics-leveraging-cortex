@@ -53,11 +53,16 @@ CREATE OR REPLACE SCHEMA BRONZE_LAYER;
 CREATE OR REPLACE SCHEMA GOLD_LAYER;
 CREATE OR REPLACE SCHEMA ANALYTICS;
 
--- Create stages in SNOW_BEAR_DB.ANALYTICS
-CREATE OR REPLACE STAGE snow_bear_data_stage
-    COMMENT = 'Stage for Snow Bear fan survey data files';
+-- Grant schema-level privileges for Streamlit creation
+GRANT USAGE, CREATE STREAMLIT ON SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear_data_scientist;
 
-CREATE OR REPLACE STAGE semantic_models
+-- Create single stage for all Snow Bear files
+CREATE OR REPLACE STAGE SNOW_BEAR_DB.ANALYTICS.SNOW_BEAR_STAGE
+    COMMENT = 'Single stage for all Snow Bear files - data, app, and semantic models';
+
+-- Create separate stage for semantic models (matching DataOps pattern)
+CREATE OR REPLACE STAGE SNOW_BEAR_DB.ANALYTICS.SEMANTIC_MODELS
+    DIRECTORY = (ENABLE = TRUE)
     COMMENT = 'Stage for Cortex Analyst semantic model files';
 
 -- Switch to data context for table creation
@@ -103,14 +108,18 @@ CREATE OR REPLACE FILE FORMAT csv_format
 
 -- Final verification and status
 SELECT CURRENT_ROLE() AS current_role, CURRENT_DATABASE() AS current_database;
-SELECT 'Snow Bear setup complete! Now upload basketball_fan_survey_data.csv.gz to the snow_bear_data_stage and run the notebook.' AS status;
+SELECT 'Snow Bear setup complete! Now upload all files to SNOW_BEAR_STAGE and run the notebook.' AS status;
 
 -- Verify databases are owned by snow_bear_data_scientist
 SHOW DATABASES LIKE 'CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB';
 SHOW DATABASES LIKE 'SNOW_BEAR_DB';
 
 -- Instructions for next steps:
--- 1. Upload basketball_fan_survey_data.csv.gz and snow_bear.py to the snow_bear_data_stage
+-- 1. Upload all files to SNOW_BEAR_STAGE:
+--    - basketball_fan_survey_data.csv.gz
+--    - snow_bear.py
+--    - environment.yml  
+--    - snow_bear_fan_360.yaml
 -- 2. Download and import snow_bear_complete_setup.ipynb using Snowsight's Import .ipynb file feature
 -- 3. Run the imported Snow Bear notebook to process analytics and create Streamlit app
 
