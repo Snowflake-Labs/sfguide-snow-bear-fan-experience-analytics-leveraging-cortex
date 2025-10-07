@@ -60,10 +60,10 @@ GRANT USAGE, CREATE STREAMLIT ON SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear
 CREATE OR REPLACE STAGE SNOW_BEAR_DB.ANALYTICS.SNOW_BEAR_STAGE
     COMMENT = 'Single stage for all Snow Bear files - data, app, and semantic models';
 
--- Create separate stage for semantic models (matching DataOps pattern)
-CREATE OR REPLACE STAGE SNOW_BEAR_DB.ANALYTICS.SEMANTIC_MODELS
+-- Create separate stage for semantic models in GOLD_LAYER (where data tables exist)
+CREATE OR REPLACE STAGE SNOW_BEAR_DB.GOLD_LAYER.SEMANTIC_MODELS
     DIRECTORY = (ENABLE = TRUE)
-    COMMENT = 'Stage for Cortex Analyst semantic model files';
+    COMMENT = 'Stage for Cortex Analyst semantic model files - located in GOLD_LAYER for proper schema context';
 
 -- Switch to data context for table creation
 USE SCHEMA BRONZE_LAYER;

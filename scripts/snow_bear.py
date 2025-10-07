@@ -169,7 +169,7 @@ if session is None:
 # Customer configuration - COMPATIBLE WITH QUICKSTART
 DATABASE = session.get_current_database()
 SCHEMA = "ANALYTICS"
-CUSTOMER_SCHEMA = f"SNOW_BEAR_DB.ANALYTICS"
+CUSTOMER_SCHEMA = f"SNOW_BEAR_DB.GOLD_LAYER"
 STAGE = "SEMANTIC_MODELS"
 
 # Note: Data stored in SNOW_BEAR_DB schemas - hardcoded for quickstart compatibility
