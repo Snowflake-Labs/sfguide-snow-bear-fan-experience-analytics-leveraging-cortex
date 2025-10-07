@@ -1049,11 +1049,16 @@ with tab7:
             try:
                 # Set schema context to GOLD_LAYER where the data tables exist
                 # Use session.use_schema instead of session.sql to avoid stored procedure issues
+                original_schema = session.get_current_schema()
                 session.use_schema("SNOW_BEAR_DB.GOLD_LAYER")
                 
                 # Call Cortex Analyst API with proper semantic model
                 semantic_model = f"@{CUSTOMER_SCHEMA}.{STAGE}/{FILE}"
                 response = send_analyst_message(analyst_query, semantic_model)
+                
+                # Reset to original schema context to avoid affecting other operations
+                if original_schema:
+                    session.use_schema(f"{session.get_current_database()}.{original_schema}")
                 
                 if response and "message" in response:
                     content = response["message"]["content"]
