@@ -169,8 +169,8 @@ if session is None:
 # Customer configuration - COMPATIBLE WITH QUICKSTART
 DATABASE = session.get_current_database()
 SCHEMA = "ANALYTICS"
-CUSTOMER_SCHEMA = f"SNOW_BEAR_DB.ANALYTICS"
-STAGE = "semantic_models"
+CUSTOMER_SCHEMA = f"SNOW_BEAR_DB.GOLD_LAYER"
+STAGE = "SEMANTIC_MODELS"
 
 # Note: Data stored in SNOW_BEAR_DB schemas - hardcoded for quickstart compatibility
 
@@ -744,7 +744,7 @@ with tab6:
                     search_query = f"""
                     WITH search_results AS (
                         SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-                            'SNOW_BEAR_DB.GOLD_LAYER.SNOWBEAR_SEARCH_ANALYSIS',
+                            'SNOW_BEAR_DB.ANALYTICS.SNOWBEAR_SEARCH_ANALYSIS',
                             '{{
                                 "query": "{search_term}",
                                 "columns":[
@@ -932,12 +932,18 @@ with tab7:
     st.markdown("*Ask questions about your fan data in natural language*")
     
     # Get available semantic models
-    cmd = f"""ls @SNOW_BEAR_DB.ANALYTICS.semantic_models"""
+    cmd = f"""ls @{CUSTOMER_SCHEMA}.{STAGE}"""
     try:
         semantic_files = session.sql(cmd).collect()
         list_files = []
         for semantic_file in semantic_files:
-            list_files.append(semantic_file["name"])
+            filename = semantic_file["name"]
+            # Remove stage name prefix if present (e.g., "semantic_models/file.yaml" -> "file.yaml")
+            if "/" in filename:
+                filename = filename.split("/")[-1]
+            # Only include YAML files to avoid "Invalid semantic model yaml" errors
+            if filename.lower().endswith(('.yaml', '.yml')):
+                list_files.append(filename)
         
         if not list_files:
             st.error("No semantic models found in the stage. Please create semantic models first.")
@@ -945,7 +951,7 @@ with tab7:
     except Exception as e:
         st.error(f"Error accessing semantic models: {e}")
         st.info("💡 Note: Make sure semantic models are uploaded to the stage")
-        list_files = ["semantic_models/snow_bear_fan_360.yaml"]  # Default fallback
+        list_files = ["snow_bear_fan_360.yaml"]  # Default fallback
     
     # Semantic model selection with session state
     if 'selected_semantic_model' not in st.session_state:
@@ -1037,11 +1043,13 @@ with tab7:
             st.error(f"Error calling Cortex Analyst API: {e}")
             return None
 
+    # Process form submission
     if analyst_submitted and analyst_query:
         with st.spinner("AI Assistant is analyzing your fan data..."):
             try:
                 # Call Cortex Analyst API with proper semantic model
-                semantic_model = f"@SNOW_BEAR_DB.ANALYTICS.{FILE}"
+                # The semantic model already contains fully qualified table references
+                semantic_model = f"@{CUSTOMER_SCHEMA}.{STAGE}/{FILE}"
                 response = send_analyst_message(analyst_query, semantic_model)
                 
                 if response and "message" in response:
@@ -1057,49 +1065,68 @@ with tab7:
                         "content": content
                     })
                     
-                    st.success("🎯 AI Analysis Complete!")
-                    
-                    # Process and display the response
-                    for item in content:
-                        if item["type"] == "text":
-                            st.markdown("### 📊 AI Analysis")
-                            st.markdown(item["text"])
-                        
-                        elif item["type"] == "sql":
-                            generated_sql = item["statement"]
-                            # Collapsible SQL (auto-collapsed)
-                            with st.expander("🔍 Generated SQL", expanded=False):
-                                st.code(generated_sql, language="sql")
-
-                            # Execute the generated SQL ONCE, persist result for interactive visuals
-                            with st.spinner("Executing generated SQL..."):
-                                try:
-                                    results_df = session.sql(generated_sql.strip(";")).to_pandas()
-                                    # Persist for explore section below
-                                    st.session_state["sb_last_sql"] = generated_sql.strip(";")
-                                    st.session_state["sb_last_df"] = results_df
-                                    if not results_df.empty:
-                                        st.success(f"✅ Query executed successfully! {len(results_df)} rows. See 'Explore Result' below for charts and data.")
-                                    else:
-                                        st.warning("Query executed but returned no results.")
-                                except Exception as e:
-                                    st.error(f"Error executing generated SQL: {e}")
-                                    with st.expander("SQL that failed", expanded=False):
-                                        st.code(generated_sql, language="sql")
-                        
-                        elif item["type"] == "suggestions":
-                            st.markdown("### 💡 Suggestions")
-                            for suggestion_index, suggestion in enumerate(item["suggestions"]):
-                                if st.button(suggestion, key=f"suggestion_{suggestion_index}"):
-                                    analyst_query = suggestion
-                                    st.experimental_rerun()
+                    # Store latest response for persistence
+                    st.session_state["latest_analyst_response"] = content
+                    st.session_state["show_success_message"] = True
                 else:
                     st.error("No valid response from Cortex Analyst API.")
-                    st.info("💡 Note: Make sure your Bulls semantic model is created and accessible")
+                    st.info("💡 Note: Make sure your Snow Bear semantic model is created and accessible")
                     
             except Exception as e:
                 st.error(f"AI Assistant error: {str(e)}")
-                st.info("💡 Note: Make sure your Bulls semantic model is created and accessible")
+                st.info("💡 Note: Make sure your Snow Bear semantic model is created and accessible")
+    
+    # Display persisted success message
+    if st.session_state.get("show_success_message") and st.session_state.get("latest_analyst_response"):
+        st.success("🎯 AI Analysis Complete!")
+    
+    # Display the latest AI response (persists across all interactions)
+    if st.session_state.get("latest_analyst_response"):
+        st.markdown("---")
+        st.markdown("### 📋 Latest AI Analysis")
+        
+        content = st.session_state["latest_analyst_response"]
+        for item in content:
+            if item["type"] == "text":
+                st.markdown("#### 📊 AI Analysis")
+                st.markdown(item["text"])
+            
+            elif item["type"] == "sql":
+                generated_sql = item["statement"]
+                # Collapsible SQL (auto-collapsed)
+                with st.expander("🔍 Generated SQL", expanded=False):
+                    st.code(generated_sql, language="sql")
+
+                # Execute the generated SQL ONCE if not already executed
+                if analyst_submitted and analyst_query:
+                    with st.spinner("Executing generated SQL..."):
+                        try:
+                            results_df = session.sql(generated_sql.strip(";")).to_pandas()
+                            # Persist for explore section below
+                            st.session_state["sb_last_sql"] = generated_sql.strip(";")
+                            st.session_state["sb_last_df"] = results_df
+                            if not results_df.empty:
+                                st.session_state["sql_success_message"] = f"✅ Query executed successfully! {len(results_df)} rows. See 'Explore Result' below for charts and data."
+                            else:
+                                st.session_state["sql_success_message"] = "Query executed but returned no results."
+                        except Exception as e:
+                            st.session_state["sql_success_message"] = f"Error executing generated SQL: {e}"
+                
+                # Display persisted SQL execution message
+                if st.session_state.get("sql_success_message"):
+                    if "successfully" in st.session_state["sql_success_message"]:
+                        st.success(st.session_state["sql_success_message"])
+                    elif "Error" in st.session_state["sql_success_message"]:
+                        st.error(st.session_state["sql_success_message"])
+                    else:
+                        st.warning(st.session_state["sql_success_message"])
+            
+            elif item["type"] == "suggestions":
+                st.markdown("#### 💡 Suggestions")
+                for suggestion_index, suggestion in enumerate(item["suggestions"]):
+                    if st.button(suggestion, key=f"persist_suggestion_{suggestion_index}"):
+                        analyst_query = suggestion
+                        st.rerun()
     
     # Interactive visuals and AI narrative for the last Analyst result
     if st.session_state.get("sb_last_df") is not None:
@@ -1258,11 +1285,18 @@ with tab7:
                 """
                 cc_df = session.sql(cc_sql).to_pandas()
                 if not cc_df.empty:
-                    st.markdown(cc_df.iloc[0]["AI_RESPONSE"])
+                    narrative_response = cc_df.iloc[0]["AI_RESPONSE"]
+                    st.session_state["latest_narrative_tab7"] = narrative_response
+                    st.markdown(narrative_response)
                 else:
                     st.info("No AI response.")
             except Exception as e:
                 st.error(f"Cortex Complete error: {e}")
+        
+        # Display persisted narrative if available
+        elif st.session_state.get("latest_narrative_tab7"):
+            st.markdown("#### 📌 Previous AI Narrative:")
+            st.markdown(st.session_state["latest_narrative_tab7"])
 
     # Display chat history
     if st.session_state.analyst_messages:
