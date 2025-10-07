@@ -1045,9 +1045,6 @@ with tab7:
     if analyst_submitted and analyst_query:
         with st.spinner("AI Assistant is analyzing your fan data..."):
             try:
-                # Set schema context to GOLD_LAYER where the tables exist
-                session.sql("USE SCHEMA SNOW_BEAR_DB.GOLD_LAYER").collect()
-                
                 # Call Cortex Analyst API with proper semantic model
                 semantic_model = f"@{CUSTOMER_SCHEMA}.{STAGE}/{FILE}"
                 response = send_analyst_message(analyst_query, semantic_model)
