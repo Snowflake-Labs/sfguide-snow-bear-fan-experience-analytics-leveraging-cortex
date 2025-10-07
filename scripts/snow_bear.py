@@ -941,7 +941,9 @@ with tab7:
             # Remove stage name prefix if present (e.g., "semantic_models/file.yaml" -> "file.yaml")
             if "/" in filename:
                 filename = filename.split("/")[-1]
-            list_files.append(filename)
+            # Only include YAML files to avoid "Invalid semantic model yaml" errors
+            if filename.lower().endswith(('.yaml', '.yml')):
+                list_files.append(filename)
         
         if not list_files:
             st.error("No semantic models found in the stage. Please create semantic models first.")
