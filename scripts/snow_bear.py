@@ -1330,7 +1330,7 @@ with tab7:
                 try:
                     pain_points_query = f"""
                     SELECT MAIN_THEME, AVG(AGGREGATE_SCORE) as avg_score, COUNT(*) as count
-                    FROM SNOW_BEAR_DB.ANALYTICS.QUALTRICS_SCORECARD
+                    FROM SNOW_BEAR_DB.GOLD_LAYER.QUALTRICS_SCORECARD
                     WHERE AGGREGATE_SCORE <= 2
                     GROUP BY MAIN_THEME
                     ORDER BY count DESC
@@ -1351,7 +1351,7 @@ with tab7:
                 try:
                     highlights_query = f"""
                     SELECT MAIN_THEME, AVG(AGGREGATE_SCORE) as avg_score, COUNT(*) as count
-                    FROM SNOW_BEAR_DB.ANALYTICS.QUALTRICS_SCORECARD
+                    FROM SNOW_BEAR_DB.GOLD_LAYER.QUALTRICS_SCORECARD
                     WHERE AGGREGATE_SCORE >= 4
                     GROUP BY MAIN_THEME
                     ORDER BY count DESC
@@ -1374,7 +1374,7 @@ with tab7:
                     SELECT SEGMENT, AVG(AGGREGATE_SCORE) as avg_score, 
                            AVG(AGGREGATE_SENTIMENT) as avg_sentiment,
                            COUNT(*) as count
-                    FROM SNOW_BEAR_DB.ANALYTICS.QUALTRICS_SCORECARD
+                    FROM SNOW_BEAR_DB.GOLD_LAYER.QUALTRICS_SCORECARD
                     GROUP BY SEGMENT
                     ORDER BY avg_score DESC
                     """
