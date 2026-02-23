@@ -1,0 +1,158 @@
+-- Copyright 2026 Snowflake Inc.
+-- SPDX-License-Identifier: Apache-2.0
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--   http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- Snow Bear Fan Experience Analytics - Initial Setup Script
+-- Run this script BEFORE using the notebook
+-- This creates the role, grants privileges, then creates databases, schemas, warehouse, and stage
+
+USE ROLE accountadmin;
+
+-- Step 1: Create role for Snow Bear data scientists
+CREATE OR REPLACE ROLE snow_bear_data_scientist;
+
+-- Step 2: Grant system-level privileges to the role
+-- Grant Cortex AI privileges (required for AI functions)
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE snow_bear_data_scientist;
+
+-- Grant database creation privilege to the role
+GRANT CREATE DATABASE ON ACCOUNT TO ROLE snow_bear_data_scientist;
+
+-- Grant additional necessary privileges
+GRANT CREATE WAREHOUSE ON ACCOUNT TO ROLE snow_bear_data_scientist;
+GRANT APPLY MASKING POLICY ON ACCOUNT TO ROLE snow_bear_data_scientist;
+GRANT APPLY ROW ACCESS POLICY ON ACCOUNT TO ROLE snow_bear_data_scientist;
+
+-- Grant role to current user
+SET my_user_var = (SELECT '"' || CURRENT_USER() || '"');
+GRANT ROLE snow_bear_data_scientist TO USER identifier($my_user_var);
+
+-- Step 3: Create warehouse and grant privileges (keep as ACCOUNTADMIN for stability)
+CREATE OR REPLACE WAREHOUSE snow_bear_wh
+    WAREHOUSE_SIZE = 'small'
+    WAREHOUSE_TYPE = 'standard'
+    AUTO_SUSPEND = 60
+    AUTO_RESUME = TRUE
+    INITIALLY_SUSPENDED = TRUE
+COMMENT = 'Analytics warehouse for Snow Bear fan experience analytics';
+
+-- Grant warehouse privileges to snow_bear_data_scientist
+GRANT USAGE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+GRANT OPERATE ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+GRANT MONITOR ON WAREHOUSE snow_bear_wh TO ROLE snow_bear_data_scientist;
+
+-- Step 4: Switch to snow_bear_data_scientist role to create databases as owner
+USE ROLE snow_bear_data_scientist;
+USE WAREHOUSE snow_bear_wh;
+
+-- Verify role switch was successful
+SELECT CURRENT_ROLE() AS active_role, CURRENT_USER() AS current_user;
+
+-- Create database (now owned by snow_bear_data_scientist)
+CREATE OR REPLACE DATABASE SNOW_BEAR_DB;
+
+-- Create all schemas in SNOW_BEAR_DB
+USE DATABASE SNOW_BEAR_DB;
+CREATE OR REPLACE SCHEMA BRONZE_LAYER;
+CREATE OR REPLACE SCHEMA GOLD_LAYER;
+CREATE OR REPLACE SCHEMA ANALYTICS;
+
+-- Grant schema-level privileges for Streamlit creation
+GRANT USAGE, CREATE STREAMLIT ON SCHEMA SNOW_BEAR_DB.ANALYTICS TO ROLE snow_bear_data_scientist;
+
+-- Create single stage for all Snow Bear files
+CREATE OR REPLACE STAGE SNOW_BEAR_DB.ANALYTICS.SNOW_BEAR_STAGE
+    COMMENT = 'Single stage for all Snow Bear files - data, app, and semantic models';
+
+-- Create separate stage for semantic models in GOLD_LAYER (where data tables exist)
+CREATE OR REPLACE STAGE SNOW_BEAR_DB.GOLD_LAYER.SEMANTIC_MODELS
+    DIRECTORY = (ENABLE = TRUE)
+    COMMENT = 'Stage for Cortex Analyst semantic model files - located in GOLD_LAYER for proper schema context';
+
+-- Switch to data context for table creation
+USE SCHEMA BRONZE_LAYER;
+
+-- Create the raw data table for basketball fan survey responses
+CREATE OR REPLACE TABLE SNOW_BEAR_DB.BRONZE_LAYER.GENERATED_DATA_MAJOR_LEAGUE_BASKETBALL_STRUCTURED (
+	ID VARCHAR(16777216),
+	FOOD_OFFERING_COMMENT VARCHAR(16777216),
+	FOOD_OFFERING_SCORE VARCHAR(16777216),
+	GAME_EXPERIENCE_COMMENT VARCHAR(16777216),
+	GAME_EXPERIENCE_SCORE VARCHAR(16777216),
+	MERCHANDISE_OFFERING_COMMENT VARCHAR(16777216),
+	MERCHANDISE_OFFERING_SCORE VARCHAR(16777216),
+	MERCHANDISE_PRICING_COMMENT VARCHAR(16777216),
+	MERCHANDISE_PRICING_SCORE VARCHAR(16777216),
+	OVERALL_EVENT_COMMENT VARCHAR(16777216),
+	OVERALL_EVENT_SCORE VARCHAR(16777216),
+	PARKING_COMMENT VARCHAR(16777216),
+	PARKING_SCORE VARCHAR(16777216),
+	SEAT_LOCATION_COMMENT VARCHAR(16777216),
+	SEAT_LOCATION_SCORE VARCHAR(16777216),
+	STADIUM_ACCESS_SCORE VARCHAR(16777216),
+	STADIUM_COMMENT VARCHAR(16777216),
+	TICKET_PRICE_COMMENT VARCHAR(16777216),
+	TICKET_PRICE_SCORE VARCHAR(16777216),
+	COMPANY_NAME VARCHAR(16777216),
+	TOPIC VARCHAR(16777216),
+	CREATED_TIMESTAMP TIMESTAMP_NTZ(9) DEFAULT CURRENT_TIMESTAMP()
+);
+
+-- Create file format for CSV loading
+CREATE OR REPLACE FILE FORMAT csv_format
+    TYPE = 'CSV'
+    FIELD_DELIMITER = ','
+    RECORD_DELIMITER = '\n'
+    SKIP_HEADER = 1
+    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+    TRIM_SPACE = TRUE
+    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+    ESCAPE_UNENCLOSED_FIELD = '\134'
+    COMMENT = 'File format for Snow Bear fan survey CSV data';
+
+-- Final verification and status
+SELECT CURRENT_ROLE() AS current_role, CURRENT_DATABASE() AS current_database;
+SELECT 'Snow Bear setup complete! Now upload all files to SNOW_BEAR_STAGE and run the notebook.' AS status;
+
+-- Verify databases are owned by snow_bear_data_scientist
+SHOW DATABASES LIKE 'CUSTOMER_MAJOR_LEAGUE_BASKETBALL_DB';
+SHOW DATABASES LIKE 'SNOW_BEAR_DB';
+
+-- Instructions for next steps:
+-- 1. Upload all files to SNOW_BEAR_STAGE:
+--    - basketball_fan_survey_data.csv.gz
+--    - snow_bear.py
+--    - environment.yml  
+--    - snow_bear_fan_360.yaml
+-- 2. Download and import snow_bear_complete_setup.ipynb using Snowsight's Import .ipynb file feature
+-- 3. Run the imported Snow Bear notebook to process analytics and create Streamlit app
+
+-- ============================================================================
+-- TEARDOWN SCRIPT (Uncomment lines below to clean up all resources)
+-- ============================================================================
+
+
+-- Snow Bear Analytics Teardown Script
+-- Uncomment and run these lines to remove all objects created during the quickstart
+
+-- USE ROLE ACCOUNTADMIN;
+
+-- USE DATABASE SNOWFLAKE;
+-- USE SCHEMA INFORMATION_SCHEMA;
+
+-- DROP DATABASE IF EXISTS SNOW_BEAR_DB;
+-- DROP ROLE IF EXISTS snow_bear_data_scientist;
+
+-- DROP WAREHOUSE IF EXISTS snow_bear_wh;
+
